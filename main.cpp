@@ -75,7 +75,6 @@ int main() {
 
     // Center the imported geometry in XY and put its lowest Z on the ground.
     const glm::vec3 modelCenter = (model.minimum() + model.maximum()) * 0.5f;
-    // std::cout << model.minimum().z << "\n";
     const glm::vec3 modelOrigin(modelCenter.x, modelCenter.y, model.minimum().z);
     constexpr float modelScale = 1.0f;
     std::cout << "Loaded character.obj; bounds: ("
