@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cmath>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -9,7 +8,7 @@
 #include <imgui_internal.h>
 #include "Objects.h"
 #include "Renderer.h"
-#include "Camera.h"
+#include "Controls.h"
 #include "MenuBar.h"
 #include "LoggerWindow.h"
 
@@ -41,19 +40,8 @@ int main() {
         return -1;
     }
     glfwSwapInterval(1);
-    // float boxLength = 7.5f;
-    constexpr float particleRadius = 0.5f;
-    glm::vec3 particlePosition(15.0f, 15.0f, particleRadius);
-    const float modelForwardAngle = glm::radians(-90.0f);
-    float modelYaw = 0.0f;
-    float cameraAzimuth =
-        modelYaw + modelForwardAngle + glm::radians(180.0f);
-    const float modelTurnSpeed = glm::radians(120.0f);
+    PlayerControls player(glm::vec3(15.0f, 15.0f, 0.5f));
     const glm::vec3 particleColor(1.0f, 0.5f, 0.2f);
-    float cameraRadius = 18.0f;
-    // float cameraAzimuth = glm::radians(90.0f);
-    float cameraElevation = glm::radians(25.0f);
-    constexpr float cameraSpeed = 1.0f; // Radians per second.
     // ImGui initialization
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -143,121 +131,8 @@ int main() {
         }
         // Framebuffer pixels also handle Retina displays and monitor changes.
         glViewport(0, 0, width, height);
-        // cameraControls(window, cameraAzimuth, cameraElevation, cameraRadius,
-        //                cameraSpeed, deltaTime);
-
-        // // Particle Movement
-        // constexpr float particleSpeed = 3.0f; // World units per second.
-        // // Camera azimuth points from the target toward the camera.
-        // // Negating it gives forward movement toward the target.
-        
-        // const glm::vec3 forward(
-        //     -std::cos(cameraAzimuth),
-        //     -std::sin(cameraAzimuth),
-        //     0.0f
-        // );
-        // const glm::vec3 right = glm::cross(
-        //     forward,
-        //     glm::vec3(0.0f, 0.0f, 1.0f)
-        // );
-        // glm::vec3 movement(0.0f);
-        // // Forward + Backward
-        // if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        //     movement += forward;
-        // }
-        // if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        //     movement -= forward;
-        // }
-        // // Strafing Left + Right
-        // if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-        //     movement -= right;
-        // }
-        // if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-        //     movement += right;
-        // }
-        // // Rotating Left + Right
-        // if (!io.WantCaptureKeyboard) {
-        //     float turnInput = 0.0f;
-        //     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        //         turnInput += 1.0f;
-        //     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        //         turnInput -= 1.0f;
-        //     const float turnAngle = turnInput * modelTurnSpeed * deltaTime;
-        //     modelYaw += turnAngle;
-        //     cameraAzimuth += turnAngle;
-        //     modelYaw = std::remainder(modelYaw, glm::radians(360.0f));
-        //     cameraAzimuth = std::remainder(cameraAzimuth, glm::radians(360.0f));
-        // }
-
-        // if (glm::length(movement) > 0.0f)
-        //     particlePosition += glm::normalize(movement) * particleSpeed * deltaTime;
         if (!io.WantCaptureKeyboard) {
-            const auto pressed = [window](int key) {
-                return glfwGetKey(window, key) == GLFW_PRESS;
-            };
-            // A/D turn both camera and model.
-            // Hold Left Alt to turn only the camera.
-            const bool cameraOnly = pressed(GLFW_KEY_LEFT_ALT);
-            const float turnInput =
-                static_cast<float>(pressed(GLFW_KEY_A)) -
-                static_cast<float>(pressed(GLFW_KEY_D));
-            const float turnAngle = turnInput * modelTurnSpeed * deltaTime;
-            cameraAzimuth += turnAngle;
-            if (!cameraOnly)
-                modelYaw += turnAngle;
-            cameraAzimuth = std::remainder(cameraAzimuth, glm::radians(360.0f));
-            modelYaw = std::remainder(modelYaw, glm::radians(360.0f));
-            // Camera elevation.
-            const float elevationInput =
-                static_cast<float>(pressed(GLFW_KEY_UP)) -
-                static_cast<float>(pressed(GLFW_KEY_DOWN));
-            cameraElevation += elevationInput * cameraSpeed * deltaTime;
-            cameraElevation = glm::clamp(
-                cameraElevation, 0.0f, glm::radians(89.0f)
-            );
-            // Camera zoom.
-            const float zoomInput =
-                static_cast<float>(pressed(GLFW_KEY_PERIOD)) -
-                static_cast<float>(pressed(GLFW_KEY_COMMA));
-
-            cameraRadius += zoomInput * 6.0f * deltaTime;
-            cameraRadius = glm::clamp(cameraRadius, 5.0f, 50.0f);
-            // Calculate movement directions AFTER updating camera rotation.
-            const glm::vec3 forward(
-                -std::cos(cameraAzimuth),
-                -std::sin(cameraAzimuth),
-                0.0f
-            );
-            const glm::vec3 right = glm::cross(
-                forward, glm::vec3(0.0f, 0.0f, 1.0f)
-            );
-            const bool movingForward = pressed(GLFW_KEY_W);
-            const bool movingBackward = pressed(GLFW_KEY_S);
-
-            glm::vec3 movement(0.0f);
-            if (movingForward)  movement += forward;
-            if (movingBackward) movement -= forward;
-            if (pressed(GLFW_KEY_Q)) movement -= right;
-            if (pressed(GLFW_KEY_E)) movement += right;
-
-            constexpr float particleSpeed = 3.0f;
-
-            // Direction the exported model faces when modelYaw == 0.
-            // This assumes its front points along +X.
-            // const float modelForwardAngle = glm::radians(0.0f);
-            // const float modelForwardAngle = glm::radians(-90.0f);
-            if (glm::length(movement) > 0.0f) {
-                const glm::vec3 direction = glm::normalize(movement);
-
-                particlePosition += direction * particleSpeed * deltaTime;
-
-                // Face travel direction when W or S is pressed alone.
-                // Q/E alone keep their existing strafing behavior.
-                if (movingForward != movingBackward) {
-                    modelYaw = std::atan2(direction.y, direction.x)
-                            - modelForwardAngle;
-                }
-            }
+            player.updateControls(window, deltaTime);
         }
         // Inventory Window
         if (!io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_I, false)) {
@@ -277,15 +152,7 @@ int main() {
             ImGui::End();
         }
         
-        // Update particlePosition here when adding movement, before the camera.
-        const glm::vec3 target = particlePosition;
-        const glm::vec3 cameraPosition = calculateCameraPosition(
-            cameraRadius, cameraAzimuth, cameraElevation, target);
-        const glm::mat4 view = glm::lookAt(
-            cameraPosition, 
-            target, 
-            glm::vec3(0.0f, 0.0f, 1.0f) // World up is +Z.
-        );
+        const glm::mat4 view = player.viewMatrix();
         const glm::mat4 projection = glm::perspective(
             glm::radians(45.0f), 
             static_cast<float>(width) / height, 
@@ -296,21 +163,17 @@ int main() {
         renderer.drawXYPlane();
         renderer.drawBox(glm::vec3(10.0f, 5.0f, 0.0f), glm::vec3(7.5f, 7.5f, 7.5f))
         .drawStairs();
-        // renderer.drawParticle(
-        //     particlePosition,
-        //     particleRadius,
-        //     particleColor
-        // );
+        const glm::vec3& playerPosition = player.position();
         glm::mat4 modelTransform = glm::translate(
             glm::mat4(1.0f), 
             glm::vec3(
-                particlePosition.x, 
-                particlePosition.y, 
+                playerPosition.x, 
+                playerPosition.y, 
                 0.0f)
             );
         modelTransform = glm::rotate(
             modelTransform,
-            modelYaw,
+            player.yaw(),
             glm::vec3(0.0f, 0.0f, 1.0f)
         );
         modelTransform = glm::scale(

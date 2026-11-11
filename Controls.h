@@ -1,27 +1,29 @@
 #ifndef CONTROLS_H
 #define CONTROLS_H
-#include <GLFW/glfw3.h>
-#include <glm/gtc/matrix_transform.hpp>
+
+#include <glm/glm.hpp>
+
+struct GLFWwindow;
 
 class PlayerControls {
-
-    // Constructor
-    PlayerControls(
-        GLFWwindow* window, 
-        glm::vec3& movement, 
-        glm::vec3 forward, 
-        glm::vec3 right
-    );
 public:
-    void updateControls(
-        GLFWwindow* window, 
-        glm::vec3& movement, 
-        glm::vec3 forward, 
-        glm::vec3 right
-    );
+    explicit PlayerControls(const glm::vec3& initialPosition);
 
-    void openWindow(GLFWwindow* window);
+    void updateControls(GLFWwindow* window, float deltaTime);
+    glm::mat4 viewMatrix() const;
 
+    const glm::vec3& position() const { return position_; }
+    float yaw() const { return yaw_; }
+
+private:
+    void updateCamera(GLFWwindow* window, float deltaTime);
+    void updateMovement(GLFWwindow* window, float deltaTime);
+
+    glm::vec3 position_;
+    float yaw_ = 0.0f;
+    float cameraAzimuth_;
+    float cameraElevation_;
+    float cameraRadius_ = 18.0f;
 };
 
 #endif // CONTROLS_H
