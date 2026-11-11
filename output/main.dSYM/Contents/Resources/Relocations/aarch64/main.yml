@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/fell/Google Drive/Work-Research-Training/c_plus_plus_things/MyGame/output/main'
+relocations:     []
+...

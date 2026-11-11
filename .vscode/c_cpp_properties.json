@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/homebrew/opt/sfml/include",
+                "/opt/homebrew/opt/glfw/include",
+                "/opt/homebrew/opt/glm/include",
+                "${workspaceFolder}/external/glad/include",
+                "${workspaceFolder}/external/imgui",
+                "${workspaceFolder}/external/imgui/backends"
+            ],
+            "compilerPath": "/usr/bin/clang++",
+            "cStandard": "c23",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "cppStandard": "c++23"
+        }
+    ],
+    "version": 4
+}

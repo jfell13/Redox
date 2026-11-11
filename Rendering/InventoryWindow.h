@@ -1,0 +1,5 @@
+#ifndef INVENTORY_WINDOW_H
+#define INVENTORY_WINDOW_H
+
+
+#endif // INVENTORY_WINDOW_H
