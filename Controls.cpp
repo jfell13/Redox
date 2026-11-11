@@ -26,18 +26,12 @@ void PlayerControls::updateControls(GLFWwindow* window, float deltaTime) {
 }
 
 void PlayerControls::updateCamera(GLFWwindow* window, float deltaTime) {
-    // A/D turn both camera and model.
-    // Hold Left Alt to turn only the camera.
-    const bool cameraOnly = pressed(window, GLFW_KEY_LEFT_ALT);
-    const float turnInput =
-        static_cast<float>(pressed(window, GLFW_KEY_A)) -
-        static_cast<float>(pressed(window, GLFW_KEY_D));
-    const float turnAngle = turnInput * modelTurnSpeed * deltaTime;
-    cameraAzimuth_ += turnAngle;
-    if (!cameraOnly)
-        yaw_ += turnAngle;
+    // L/R turn both camera and model.
+    const float orbitInput =
+        static_cast<float>(pressed(window, GLFW_KEY_LEFT)) -
+        static_cast<float>(pressed(window, GLFW_KEY_RIGHT));
+    cameraAzimuth_ += orbitInput * cameraSpeed * deltaTime;
     cameraAzimuth_ = std::remainder(cameraAzimuth_, glm::radians(360.0f));
-    yaw_ = std::remainder(yaw_, glm::radians(360.0f));
     // Camera elevation.
     const float elevationInput =
         static_cast<float>(pressed(window, GLFW_KEY_UP)) -
@@ -56,6 +50,30 @@ void PlayerControls::updateCamera(GLFWwindow* window, float deltaTime) {
 }
 
 void PlayerControls::updateMovement(GLFWwindow* window, float deltaTime) {
+    const float turnInput =
+        static_cast<float>(pressed(window, GLFW_KEY_A)) -
+        static_cast<float>(pressed(window, GLFW_KEY_D));
+    yaw_ += turnInput * modelTurnSpeed * deltaTime;
+    yaw_ = std::remainder(yaw_, glm::radians(360.0f));
+    
+    const bool movingForward = pressed(window, GLFW_KEY_W);
+    const bool movingBackward = pressed(window, GLFW_KEY_S);
+
+    if (movingForward != movingBackward) {
+    // The orbit angle points from the player toward the camera.
+    // Add half a turn to place it behind the model's forward direction.
+        const float fullTurn = glm::radians(360.f);
+        const float targetAzimuth =
+            yaw_ + modelForwardAngle + glm::radians(180.0f);
+        const float angleError =
+            std::remainder(targetAzimuth - cameraAzimuth_, fullTurn);
+        constexpr float followRate = 6.0f; // Per second.
+        const float blend = 1.0f - std::exp(-followRate * deltaTime);
+        cameraAzimuth_ = std::remainder(
+            cameraAzimuth_ + angleError * blend, fullTurn
+        );
+    }
+
     const glm::vec3 forward(
         -std::cos(cameraAzimuth_),
         -std::sin(cameraAzimuth_),
@@ -64,8 +82,6 @@ void PlayerControls::updateMovement(GLFWwindow* window, float deltaTime) {
     const glm::vec3 right = glm::cross(
         forward, glm::vec3(0.0f, 0.0f, 1.0f)
     );
-    const bool movingForward = pressed(window, GLFW_KEY_W);
-    const bool movingBackward = pressed(window, GLFW_KEY_S);
 
     glm::vec3 movement(0.0f);
     if (movingForward)  movement += forward;
@@ -74,19 +90,11 @@ void PlayerControls::updateMovement(GLFWwindow* window, float deltaTime) {
     if (pressed(window, GLFW_KEY_E)) movement += right;
 
     constexpr float movementSpeed = 3.0f;
-
     if (glm::length(movement) > 0.0f) {
         const glm::vec3 direction = glm::normalize(movement);
-
         position_ += direction * movementSpeed * deltaTime;
-
-        // Face travel direction when W or S is pressed alone.
-        // Q/E alone keep their existing strafing behavior.
-        if (movingForward != movingBackward) {
-            yaw_ = std::atan2(direction.y, direction.x)
-                    - modelForwardAngle;
-        }
     }
+    
 }
 
 glm::mat4 PlayerControls::viewMatrix() const {
