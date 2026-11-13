@@ -18,7 +18,7 @@ public:
 private:
     void updateCamera(GLFWwindow* window, float deltaTime);
     void updateMovement(GLFWwindow* window, float deltaTime);
-
+    // void viewInventory(bool& inventoryOpen);
     glm::vec3 position_;
     float yaw_ = 0.0f;
     float cameraAzimuth_;

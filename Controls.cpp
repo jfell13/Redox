@@ -1,5 +1,9 @@
 #include "Controls.h"
-
+// #include "imgui.h"
+// #include "imgui_impl_glfw.h"
+// #include "imgui_impl_opengl3.h"
+// #include <imgui_internal.h>
+// #include <iostream>
 #include <cmath>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -102,3 +106,22 @@ glm::mat4 PlayerControls::viewMatrix() const {
         cameraRadius_, cameraAzimuth_, cameraElevation_, position_);
     return glm::lookAt(cameraPosition, position_, glm::vec3(0.0f, 0.0f, 1.0f));
 }
+
+// void PlayerControls::viewInventory(bool& inventoryOpen) {
+//     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_I, false)) {
+//             inventoryOpen = !inventoryOpen;
+//         }
+//         if (inventoryOpen) {
+//             ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
+
+//             if (ImGui::Begin("Inventory", &inventoryOpen)) {
+//                 if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, 0))) {
+//                     for (int i = 0; i < 20; ++i) {
+//                         ImGui::Text("Inventory slot %d", i + 1);
+//                     }
+//                 }
+//                 ImGui::EndChild();
+//             }
+//             ImGui::End();
+//         }
+// }
