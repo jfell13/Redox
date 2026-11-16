@@ -1,0 +1,30 @@
+[
+  {
+    "id": "healing_potion",
+    "name": "Healing Potion",
+    "weight": 0.25,
+    "maxStackSize": 10,
+    "description": "Restores health."
+  },
+  {
+    "id": "axe",
+    "name": "Axe",
+    "weight": 5,
+    "maxStackSize": 1,
+    "description": "An axe."
+  },
+  {
+    "id": "backpack",
+    "name": "Backpack",
+    "weight": 1,
+    "maxStackSize": 1,
+    "description": "A backback."
+  },
+  {
+    "id": "paper",
+    "name": "Paper",
+    "weight": 0.05,
+    "maxStackSize": 500,
+    "description": "An axe."
+  }
+]

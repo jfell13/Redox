@@ -11,13 +11,13 @@ Inventory::Inventory(std::size_t initialCapacity)
 
 bool Inventory::addItem(const Item& item) {
     if (item.stackSize <= 0 ||
-        (item.stackable && item.stackSize > item.maxStackSize) ||
-        (!item.stackable && item.stackSize != 1)) {
+        (item.isStackable() && item.stackSize > item.maxStackSize) ||
+        (!item.isStackable() && item.stackSize != 1)) {
         return false;
     }
 
     for (auto& slot : slots_) {
-        if (slot && item.stackable && slot->stackable &&
+        if (slot && item.isStackable() && slot->isStackable() &&
             slot->itemID == item.itemID &&
             item.stackSize <= slot->maxStackSize - slot->stackSize) {
             slot->stackSize += item.stackSize;
@@ -38,9 +38,15 @@ bool Inventory::addItem(const Item& item) {
     return true;
 }
 
-// bool Inventory::removeItem(Item item) { 
-// }
+std::size_t Inventory::slotCount() const {
+    return slots_.size();
+}
 
-// int Inventory::countItem(Item item) {
+const Item* Inventory::itemAt(std::size_t index) const {
+    if (index >= slots_.size()) {
+        return nullptr;
+    }
 
-// }
+    const auto& slot = slots_[index];
+    return slot ? &*slot : nullptr;
+}

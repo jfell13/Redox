@@ -11,6 +11,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(assimp CONFIG REQUIRED)
+find_package(Boost CONFIG REQUIRED COMPONENTS json)
 
 # Replace this package's invalid SDK-specific zlib dependency.
 find_package(ZLIB REQUIRED)
@@ -62,6 +63,9 @@ target_compile_definitions(rendering PUBLIC GLFW_INCLUDE_NONE)
 add_executable(ReDox
     main.cpp
     Controls.cpp
+    Inventory.cpp
+    ItemCatalog.cpp
+    Player.cpp
 )
 
 set_target_properties(ReDox PROPERTIES
@@ -69,7 +73,7 @@ set_target_properties(ReDox PROPERTIES
 )
 
 target_link_libraries(ReDox PRIVATE
-    physics rendering imgui
+    physics rendering imgui Boost::json
 )
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     target_compile_options(ReDox PRIVATE -Wall -Wextra)

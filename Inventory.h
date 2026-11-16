@@ -15,9 +15,9 @@ class Inventory {
 public:
     // Inventory() : 
     explicit Inventory(std::size_t initialCapacity);
-    bool Inventory::addItem(const Item& item);
-    // bool removeItem(Item item);
-    // int countItem(Item item) const;
+    bool addItem(const Item& item);
+    std::size_t slotCount() const;
+    const Item* itemAt(std::size_t index) const;
 
 private:
     std::vector<std::optional<Item>> slots_{};

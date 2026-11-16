@@ -1,4 +1,8 @@
 #include <iostream>
+#include <vector>
+#include <stdexcept>
+#include <unordered_map>
+#include <map>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -6,11 +10,15 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <imgui_internal.h>
-#include "Objects.h"
-#include "Renderer.h"
-#include "Controls.h"
-#include "MenuBar.h"
-#include "LoggerWindow.h"
+#include <Objects.h>
+#include <Renderer.h>
+#include <Controls.h>
+#include <Item.h>
+#include <Inventory.h>
+#include <ItemCatalog.h>
+#include <Player.h>
+#include <MenuBar.h>
+#include <LoggerWindow.h>
 
 int main() {
     if (!glfwInit()) {
@@ -40,7 +48,34 @@ int main() {
         return -1;
     }
     glfwSwapInterval(1);
-    PlayerControls player(glm::vec3(15.0f, 15.0f, 0.5f));
+    // Item Catalog Loading
+    ItemCatalog catalog;
+    catalog.load("items.json");
+    // if (const auto* potion = catalog.find("healing_potion")) {
+    //     std::cout << potion->name << '\n';
+    // }
+    std::vector<Item> startingItems;
+    startingItems.reserve(catalog.definitions().size());
+
+    for (const auto& [id, definition] : catalog.definitions()) {
+        Item item{};
+        item.itemID = id;
+        item.name = definition.name;
+        item.itemWeight = definition.weight;
+        item.maxStackSize = definition.maxStackSize;
+        item.itemDescription = definition.description;
+        item.stackSize = 1;  // Give the player one of each catalog item.
+
+        startingItems.push_back(item);
+    }
+    // Player initiallization
+    glm::vec3 spawnPoint = glm::vec3(15.0f, 15.0f, 0.5f);
+    Player player(
+        spawnPoint, 
+        std::size_t(20),
+        startingItems
+    );
+    
     const glm::vec3 particleColor(1.0f, 0.5f, 0.2f);
     // ImGui initialization
     IMGUI_CHECKVERSION();
@@ -82,6 +117,8 @@ int main() {
               << ") to (" << model.maximum().x << ", " << model.maximum().y
               << ", " << model.maximum().z << ")\n";
 
+    
+
     double previousTime = glfwGetTime();
     bool inventoryOpen = false;
     while (!glfwWindowShouldClose(window)) {
@@ -108,7 +145,7 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
+        ImGui::Text("Hello, world!");
         menubar.menuBar(window);
         if (ImGui::BeginViewportSideBar("StatusBar", nullptr, ImGuiDir_Down, 60.0f, ImGuiWindowFlags_NoDecoration)) {
             ImGui::Text("Application Status: Ready");
@@ -142,8 +179,16 @@ int main() {
 
             if (ImGui::Begin("Inventory", &inventoryOpen)) {
                 if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, 0))) {
-                    for (int i = 0; i < 20; ++i) {
-                        ImGui::Text("Inventory slot %d", i + 1);
+                    int invCount = player.slotCount();
+                    const Inventory& currInv = player.currentInventory();
+                    for (int i = 0; i < invCount; ++i) {
+                        const Item* currItem = currInv.itemAt(i);
+                        if (currItem == nullptr) {
+                            ImGui::Text("Inventory slot %d: Empty", i + 1);
+                        } else {
+                            ImGui::Text("Inventory slot %d: %s", i + 1, currItem->name.c_str());
+                        }
+                        // ImGui::Text("Inventory slot %d", i + 1);
                     }
                 }
                 ImGui::EndChild();
