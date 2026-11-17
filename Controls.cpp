@@ -3,7 +3,7 @@
 // #include "imgui_impl_glfw.h"
 // #include "imgui_impl_opengl3.h"
 // #include <imgui_internal.h>
-// #include <iostream>
+#include <iostream>
 #include <cmath>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -106,6 +106,10 @@ glm::mat4 PlayerControls::viewMatrix() const {
         cameraRadius_, cameraAzimuth_, cameraElevation_, position_);
     return glm::lookAt(cameraPosition, position_, glm::vec3(0.0f, 0.0f, 1.0f));
 }
+
+// bool PlayerControls::leftClick(GLFWwindow* window) {
+//     return glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+// }
 
 // void PlayerControls::viewInventory(bool& inventoryOpen) {
 //     if (!io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_I, false)) {

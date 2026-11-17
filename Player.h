@@ -30,6 +30,15 @@ class Player {
         float yaw() const { return controls_.yaw(); }
         std::size_t slotCount() const { return inventory_.slotCount(); }
         const Inventory& currentInventory() const {return inventory_; }
+
+        // bool leftClick(GLFWwindow* window) {
+        //     return controls_.leftClick(window);
+        // }
+        void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
+        void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+        glm::vec3 GetRayFromMouse(double mouseX, double mouseY, int screenWidth, int screenHeight, 
+                          const glm::mat4& view, const glm::mat4& projection);
+
     private:
         glm::vec3 position_;
         PlayerControls controls_;

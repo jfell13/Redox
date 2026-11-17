@@ -40,6 +40,9 @@ bool Model::load(const std::string& path) {
         return false;
     }
 
+    // aiColor3D emissiveColor(0.0f, 0.0f, 0.0f);
+    // material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor);
+
     cleanup();
     boundsMin = minimum;
     boundsMax = maximum;
@@ -62,3 +65,22 @@ void Model::cleanup() {
     vao = vbo = 0;
     vertexCount = 0;
 }
+
+glm::vec3 Model::GetRayFromMouse(double mouseX, double mouseY, int screenWidth, int screenHeight, 
+                          const glm::mat4& view, const glm::mat4& projection) {
+    // 1. Convert screen coordinates to Normalized Device Coordinates (-1 to 1)
+    float x = (2.0f * static_cast<float>(mouseX)) / screenWidth - 1.0f;
+    float y = 1.0f - (2.0f * static_cast<float>(mouseY)) / screenHeight; // Invert Y for OpenGL
+
+    // 2. Homogeneous Clip Coordinates
+    glm::vec4 rayClip(x, y, -1.0f, 1.0f);
+
+    // 3. Eye (Camera) Coordinates
+    glm::vec4 rayEye = glm::inverse(projection) * rayClip;
+    rayEye = glm::vec4(rayEye.x, rayEye.y, -1.0f, 0.0f);
+
+    // 4. World Coordinates
+    glm::vec3 rayWorld = glm::vec3(glm::inverse(view) * rayEye);
+    return glm::normalize(rayWorld);
+}
+

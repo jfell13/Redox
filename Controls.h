@@ -1,6 +1,6 @@
 #ifndef CONTROLS_H
 #define CONTROLS_H
-
+#include <iostream>
 #include <glm/glm.hpp>
 
 struct GLFWwindow;
@@ -14,6 +14,8 @@ public:
 
     const glm::vec3& position() const { return position_; }
     float yaw() const { return yaw_; }
+    
+    // bool leftClick(GLFWwindow* window);
 
 private:
     void updateCamera(GLFWwindow* window, float deltaTime);

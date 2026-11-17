@@ -85,6 +85,8 @@ int main() {
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
+    // ImGui Mouse Position Helper Function
+    ImVec2 mousePos = ImGui::GetMousePos();
     // Logger Window + Menu Bar
     LoggerWindow loggerWindow(20.0f, 20.0f, 260.0f, 120.0f);
     MenuBar menubar;
@@ -97,6 +99,20 @@ int main() {
         glfwTerminate();
         return -1;
     }
+
+    Model chest;
+    if (!chest.load("chest.obj")) {
+        std::cerr << chest.error() << '\n';
+        chest.cleanup();
+        renderer.cleanup();
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return -1;
+    }
+    const glm::vec3 chestCenter = (chest.minimum() + chest.maximum()) * 0.5f;
+    const glm::vec3 chestOrigin(chestCenter.x, chestCenter.y, chest.minimum().z);
+    constexpr float chestScale = 0.01f;
+    ClickableModel clickableChest{&chest};
 
     Model model;
     if (!model.load(ReDox_MODEL_PATH)) {
@@ -207,6 +223,25 @@ int main() {
         renderer.drawXYPlane();
         renderer.drawBox(glm::vec3(10.0f, 5.0f, 0.0f), glm::vec3(7.5f, 7.5f, 7.5f))
         .drawStairs();
+        // Chest Test
+        const glm::vec3& chestPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::mat4 chestTransform = glm::translate(
+            glm::mat4(1.0f), 
+            glm::vec3(
+                0.0f, 
+                0.0f, 
+                0.0f)
+            );
+        chestTransform = glm::scale(
+            chestTransform, 
+            glm::vec3(chestScale)
+        );
+        renderer.drawModel(
+            chest, 
+            chestTransform, 
+            particleColor
+        );
+        // Player Adjustments
         const glm::vec3& playerPosition = player.position();
         glm::mat4 modelTransform = glm::translate(
             glm::mat4(1.0f), 
@@ -233,6 +268,71 @@ int main() {
             modelTransform, 
             particleColor
         );
+        // Testing Mouse Click
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+            ImVec2 mousePos = ImGui::GetMousePos();
+            glm::vec3 rayOrigin = glm::vec3(glm::inverse(view)[3]);
+            int windowWidth = 0;
+            int windowHeight = 0;
+            glfwGetWindowSize(window, &windowWidth, &windowHeight);
+            glm::vec3 internalMousePos = player.GetRayFromMouse(
+                mousePos.x, 
+                mousePos.y, 
+                windowWidth, 
+                windowHeight, 
+                view, 
+                projection
+            );
+            loggerWindow.addMessage(
+                "Left Mouse Button Clicked at \nWindow: "
+                + std::to_string(mousePos.x) 
+                + ", " 
+                + std::to_string(mousePos.y)
+                + "\nRay: "
+                + std::to_string(internalMousePos.x)
+                + ", " 
+                + std::to_string(internalMousePos.y)
+                + ", " 
+                + std::to_string(internalMousePos.z)
+            );
+            float hitDistance = 0.0f;
+            clickableChest.transform = chestTransform;
+            if (clickableChest.IsClicked(rayOrigin, internalMousePos, hitDistance)) {
+                loggerWindow.addMessage(
+                    "Chest was Clicked!"
+                );
+            }
+        }
+        
+        // if (GLFW_MOUSE_BUTTON_LEFT)
+        // if (!io.MouseClicked) {
+        //         glm::vec3 internalMousePos = player.GetRayFromMouse(
+        //             mousePos.x, 
+        //             mousePos.x, 
+        //             width, 
+        //             height, 
+        //             view, 
+        //             projection);
+        //         std::cout << "Mouse Screen Position: " << 
+        //         mousePos.x <<
+        //         ", " <<
+        //         mousePos.y << "\n";
+        //         std::cout << "Internal Mouse Position: " <<
+        //         internalMousePos.x <<
+        //         ", " <<
+        //         internalMousePos.y << "\n";
+        //         loggerWindow.addMessage(
+        //             "You Clicked at " + std::to_string(mousePos.x) + ", " +
+        //             std::to_string(mousePos.y)
+        //         );
+        //         if (internalMousePos == chestPosition) {
+        //             loggerWindow.addMessage("You Clicked The Chest! (Internal)");
+        //         }
+                // if (mousePos == chestPosition) {
+                //     loggerWindow.addMessage("You Clicked The Chest! (Internal)");
+                // }
+
+        // }
         
         loggerWindow.draw();
         ImGui::Render();
@@ -242,6 +342,7 @@ int main() {
 
     // OpenGL resources must be released while the context is still current.
     model.cleanup();
+    chest.cleanup();
     renderer.cleanup();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
