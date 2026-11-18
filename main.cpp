@@ -111,7 +111,11 @@ int main() {
     }
     const glm::vec3 chestCenter = (chest.minimum() + chest.maximum()) * 0.5f;
     const glm::vec3 chestOrigin(chestCenter.x, chestCenter.y, chest.minimum().z);
-    constexpr float chestScale = 0.01f;
+    constexpr float chestScale = 0.05f;
+    Inventory chestInventory{12};
+    for (Item item : startingItems) {
+        chestInventory.addItem(item);
+    }
     ClickableModel clickableChest{&chest};
 
     Model model;
@@ -137,6 +141,7 @@ int main() {
 
     double previousTime = glfwGetTime();
     bool inventoryOpen = false;
+    bool chestInvOpen = false;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -192,7 +197,6 @@ int main() {
         }
         if (inventoryOpen) {
             ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
-
             if (ImGui::Begin("Inventory", &inventoryOpen)) {
                 if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, 0))) {
                     int invCount = player.slotCount();
@@ -204,7 +208,6 @@ int main() {
                         } else {
                             ImGui::Text("Inventory slot %d: %s", i + 1, currItem->name.c_str());
                         }
-                        // ImGui::Text("Inventory slot %d", i + 1);
                     }
                 }
                 ImGui::EndChild();
@@ -268,7 +271,7 @@ int main() {
             modelTransform, 
             particleColor
         );
-        // Testing Mouse Click
+        // Clicking on Chest; Opening Window
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
             ImVec2 mousePos = ImGui::GetMousePos();
             glm::vec3 rayOrigin = glm::vec3(glm::inverse(view)[3]);
@@ -276,64 +279,41 @@ int main() {
             int windowHeight = 0;
             glfwGetWindowSize(window, &windowWidth, &windowHeight);
             glm::vec3 internalMousePos = player.GetRayFromMouse(
-                mousePos.x, 
-                mousePos.y, 
-                windowWidth, 
-                windowHeight, 
-                view, 
-                projection
+                mousePos.x, mousePos.y, windowWidth, 
+                windowHeight, view, projection
             );
-            loggerWindow.addMessage(
-                "Left Mouse Button Clicked at \nWindow: "
-                + std::to_string(mousePos.x) 
-                + ", " 
-                + std::to_string(mousePos.y)
-                + "\nRay: "
-                + std::to_string(internalMousePos.x)
-                + ", " 
-                + std::to_string(internalMousePos.y)
-                + ", " 
-                + std::to_string(internalMousePos.z)
-            );
+            // loggerWindow.addMessage(
+            //     "Left Mouse Button Clicked at \nWindow: "
+            //     + std::to_string(mousePos.x) + ", " + std::to_string(mousePos.y)
+            //     + "\nRay: " + std::to_string(internalMousePos.x) + ", " 
+            //     + std::to_string(internalMousePos.y) + ", " + std::to_string(internalMousePos.z)
+            // );
             float hitDistance = 0.0f;
+
             clickableChest.transform = chestTransform;
             if (clickableChest.IsClicked(rayOrigin, internalMousePos, hitDistance)) {
-                loggerWindow.addMessage(
-                    "Chest was Clicked!"
-                );
-            }
+                chestInvOpen = true;
+                loggerWindow.addMessage("Chest was Clicked!");
+            }   
         }
-        
-        // if (GLFW_MOUSE_BUTTON_LEFT)
-        // if (!io.MouseClicked) {
-        //         glm::vec3 internalMousePos = player.GetRayFromMouse(
-        //             mousePos.x, 
-        //             mousePos.x, 
-        //             width, 
-        //             height, 
-        //             view, 
-        //             projection);
-        //         std::cout << "Mouse Screen Position: " << 
-        //         mousePos.x <<
-        //         ", " <<
-        //         mousePos.y << "\n";
-        //         std::cout << "Internal Mouse Position: " <<
-        //         internalMousePos.x <<
-        //         ", " <<
-        //         internalMousePos.y << "\n";
-        //         loggerWindow.addMessage(
-        //             "You Clicked at " + std::to_string(mousePos.x) + ", " +
-        //             std::to_string(mousePos.y)
-        //         );
-        //         if (internalMousePos == chestPosition) {
-        //             loggerWindow.addMessage("You Clicked The Chest! (Internal)");
-        //         }
-                // if (mousePos == chestPosition) {
-                //     loggerWindow.addMessage("You Clicked The Chest! (Internal)");
-                // }
-
-        // }
-        
+        if (chestInvOpen) {
+            ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
+            if (ImGui::Begin("Chest Inventory", &chestInvOpen)) {
+                if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, 0))) {
+                    // const Inventory& currChestInv = chestInventory.;
+                    for (int i = 0; i < chestInventory.slotCount(); ++i) {
+                        const Item* currItem = chestInventory.itemAt(i);
+                        if (currItem == nullptr) {
+                            ImGui::Text("Chest Inventory slot %d: Empty", i + 1);
+                        } else {
+                            ImGui::Text("Chest Inventory slot %d: %s", i + 1, currItem->name.c_str());
+                        }
+                    }
+                }
+                ImGui::EndChild();
+            }
+            ImGui::End();
+        }
         loggerWindow.draw();
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

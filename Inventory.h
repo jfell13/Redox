@@ -18,7 +18,15 @@ public:
     bool addItem(const Item& item);
     std::size_t slotCount() const;
     const Item* itemAt(std::size_t index) const;
-
+    const std::vector<std::optional<Item>>& currentInventory() const {return slots_; }
+    const Item* itemLookup(std::string_view name) const {
+        for (const auto& slot : slots_) {
+            if (slot && slot->name == name) {
+                return &*slot;
+            }
+        }
+        return nullptr;
+    }
 private:
     std::vector<std::optional<Item>> slots_{};
 };
