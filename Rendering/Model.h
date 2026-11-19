@@ -1,7 +1,8 @@
-#ifndef OBJECTS_H
-#define OBJECTS_H
+#ifndef MODEL_H
+#define MODEL_H
 
 #include <string>
+#include <vector>
 #include <glm/glm.hpp>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
@@ -20,13 +21,6 @@ struct AABB {
         max = glm::max(max, point);
     }
 };
-// Model Bounds Transforms
-// AABB GetWorldAABB(const Model& model) const {
-//     model.
-//     glm::vec3 worldMin = model.localBounds.min * model.GetScale() + model.GetPosition();
-//     glm::vec3 worldMax = model.localBounds.max * model.GetScale() + model.GetPosition();
-//     return {worldMin, worldMax};
-// }
 // Static mesh data uploaded to OpenGL. Load/cleanup require a current context.
 class Model {
     public:
@@ -46,6 +40,13 @@ class Model {
 
     private:
         friend class Renderer;
+        struct MaterialRange {
+            GLint first;
+            GLsizei count;
+            glm::vec3 diffuse;
+            bool hasDiffuse;
+        };
+        std::vector<MaterialRange> materialRanges;
         GLuint vao = 0;
         GLuint vbo = 0;
         GLsizei vertexCount = 0;
@@ -107,12 +108,5 @@ class ClickableModel {
             return true;
         }
 };
-
-// Transform Bounds
-// AABB GetWorldAABB(const Model& model) const {
-//     glm::vec3 worldMin = model.localBounds.min * model.GetScale() + model.GetPosition();
-//     glm::vec3 worldMax = model.localBounds.max * model.GetScale() + model.GetPosition();
-//     return {worldMin, worldMax};
-// }
 
 #endif

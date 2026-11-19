@@ -46,7 +46,7 @@ add_library(rendering STATIC
     Rendering/Camera.cpp
     Rendering/LoggerWindow.cpp
     Rendering/MenuBar.cpp
-    Rendering/Objects.cpp
+    Rendering/Model.cpp
     Rendering/Renderer.cpp
 )
 target_include_directories(physics PUBLIC
@@ -84,6 +84,11 @@ endif()
 # Use a stable path regardless of the launch working directory.
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/stylized-character.obj"
                "${CMAKE_CURRENT_BINARY_DIR}/stylized-character.obj" COPYONLY)
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/stylized-character.mtl"
+    "${CMAKE_CURRENT_BINARY_DIR}/stylized-character.mtl"
+    COPYONLY
+)
 target_compile_definitions(ReDox PRIVATE
     ReDox_MODEL_PATH="${CMAKE_CURRENT_BINARY_DIR}/stylized-character.obj"
 )

@@ -10,7 +10,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <imgui_internal.h>
-#include <Objects.h>
+#include <Model.h>
 #include <Renderer.h>
 #include <Controls.h>
 #include <Item.h>
@@ -51,9 +51,6 @@ int main() {
     // Item Catalog Loading
     ItemCatalog catalog;
     catalog.load("items.json");
-    // if (const auto* potion = catalog.find("healing_potion")) {
-    //     std::cout << potion->name << '\n';
-    // }
     std::vector<Item> startingItems;
     startingItems.reserve(catalog.definitions().size());
 
@@ -101,7 +98,8 @@ int main() {
     }
 
     Model chest;
-    if (!chest.load("chest.obj")) {
+    // if (!chest.load("chest.obj")) {
+    if (!chest.load("Crate.glb")) {
         std::cerr << chest.error() << '\n';
         chest.cleanup();
         renderer.cleanup();
@@ -111,7 +109,7 @@ int main() {
     }
     const glm::vec3 chestCenter = (chest.minimum() + chest.maximum()) * 0.5f;
     const glm::vec3 chestOrigin(chestCenter.x, chestCenter.y, chest.minimum().z);
-    constexpr float chestScale = 0.05f;
+    constexpr float chestScale = 1.0f;//0.05f;
     Inventory chestInventory{12};
     for (Item item : startingItems) {
         chestInventory.addItem(item);
@@ -211,7 +209,6 @@ int main() {
             }
             ImGui::End();
         }
-        
         const glm::mat4 view = player.viewMatrix();
         const glm::mat4 projection = glm::perspective(
             glm::radians(45.0f), 
@@ -221,8 +218,6 @@ int main() {
 
         renderer.beginFrame(view, projection);
         renderer.drawXYPlane();
-        renderer.drawBox(glm::vec3(10.0f, 5.0f, 0.0f), glm::vec3(7.5f, 7.5f, 7.5f))
-        .drawStairs();
         // Chest Test
         const glm::vec3& chestPosition = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::mat4 chestTransform = glm::translate(
@@ -236,6 +231,7 @@ int main() {
             chestTransform, 
             glm::vec3(chestScale)
         );
+        chestTransform = glm::translate(chestTransform, -chestOrigin);
         renderer.drawModel(
             chest, 
             chestTransform, 
@@ -307,12 +303,6 @@ int main() {
                         ImGui::TableNextColumn();
                         const Item* item = chestInventory.itemAt(i);
                         if (item) {
-                            // ImGui::Text("%s x%d", item->name.c_str(), item->stackSize);
-                            // std::string label = std::format("%s x%d", item->name.c_str(), item->stackSize);
-                            // bool isSelected = selected[i];
-                            // ImGui::Selectable(item->name.c_str(), &isSelected);
-                            // selected[i] = isSelected;
-
                             ImGui::PushID(static_cast<int>(i));
                             if (ImGui::Selectable(item->name.c_str())) {
                                 Item transferredItem = *item;
@@ -324,13 +314,6 @@ int main() {
                             }
                             ImGui::PopID();
 
-                            // bool has_true = std::find(selected.begin(), selected.end(), true) != selected.end();
-                            // if (has_true) {
-                            //     for (const auto& n : selected) {
-                            //         std::cout << n << " ";
-                            //     }
-                            //     std::cout << "\n";
-                            // }
                         } else {
                             ImGui::TextUnformatted("Empty");
                         }
@@ -340,52 +323,6 @@ int main() {
             }
             ImGui::End();
         }
-        //     if (ImGui::Begin("Chest Inventory", &chestInvOpen)) {
-        //         if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, 0))) {
-        //             if (ImGui::TreeNode("Grid")) {
-        //                 // static std::vector<std::vector<char>> selected(
-        //                 //     chestRows, std::vector<char>(chestCols, 0)
-        //                 // );
-        //                 static std::vector<std::vector<char>> selected(
-        //                     chestRows, std::vector<char>(chestCols, 0)
-        //                 );
-        //                 // const float time = (float)ImGui::GetTime();
-        //                 // ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f + 0.5f * cosf(time * 2.0f), 0.5f + 0.5f * sinf(time * 3.0f)));
-                        
-        //                 for (int y = 0; y < chestRows; y++)
-        //                     for (int x = 0; x < chestCols; x++)
-        //                     {
-        //                         if (x > 0)
-        //                             ImGui::SameLine();
-        //                             ImGui::Selectable("Sailor");
-        //                         // ImGui::PushID(y * chestCols + x);
-        //                         // if (ImGui::Selectable("Sailor", selected[y][x] != 0, 0, ImVec2(400, 300))) {
-        //                         //     // Toggle clicked cell + toggle neighbors
-        //                         //     selected[y][x] ^= 1;
-        //                         //     if (x > 0) { selected[y][x - 1] ^= 1; }
-        //                         //     if (x < 3) { selected[y][x + 1] ^= 1; }
-        //                         //     if (y > 0) { selected[y - 1][x] ^= 1; }
-        //                         //     if (y < 3) { selected[y + 1][x] ^= 1; }
-        //                         // }
-        //                         // ImGui::PopID();
-        //                     }
-        //                 // ImGui::PopStyleVar();
-        //                 ImGui::TreePop();
-        //             }
-        //             // const Inventory& currChestInv = chestInventory.;
-        //             // for (int i = 0; i < chestInventory.slotCount(); ++i) {
-        //             //     const Item* currItem = chestInventory.itemAt(i);
-        //             //     if (currItem == nullptr) {
-        //             //         ImGui::Text("Chest Inventory slot %d: Empty", i + 1);
-        //             //     } else {
-        //             //         ImGui::Text("Chest Inventory slot %d: %s", i + 1, currItem->name.c_str());
-        //             //     }
-        //             // }
-        //         }
-        //         ImGui::EndChild();
-        //     }
-        //     ImGui::End();
-        // }
         loggerWindow.draw();
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

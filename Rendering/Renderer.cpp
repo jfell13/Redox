@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "Objects.h"
+#include <Model.h>
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -469,7 +469,10 @@ void Renderer::drawModel(const Model& model, const glm::mat4& transform,
                          const glm::vec3& color) {
     if (!model.vao) return;
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(transform));
-    glUniform3fv(colorLoc, 1, glm::value_ptr(color));
     glBindVertexArray(model.vao);
-    glDrawArrays(GL_TRIANGLES, 0, model.vertexCount);
+    for (const auto& range : model.materialRanges) {
+        const glm::vec3& diffuse = range.hasDiffuse ? range.diffuse : color;
+        glUniform3fv(colorLoc, 1, glm::value_ptr(diffuse));
+        glDrawArrays(GL_TRIANGLES, range.first, range.count);
+    }
 }
