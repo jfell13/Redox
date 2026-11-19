@@ -28,9 +28,10 @@ class Player {
         }
         glm::mat4 viewMatrix() const { return controls_.viewMatrix();}
         float yaw() const { return controls_.yaw(); }
+
         std::size_t slotCount() const { return inventory_.slotCount(); }
         const Inventory& currentInventory() const {return inventory_; }
-
+        bool addItem(const Item& item) { return inventory_.addItem(item); }
         // bool leftClick(GLFWwindow* window) {
         //     return controls_.leftClick(window);
         // }

@@ -38,6 +38,29 @@ bool Inventory::addItem(const Item& item) {
     return true;
 }
 
+bool Inventory::removeItem(std::size_t index) {
+
+    if (index >= slots_.size()) {
+        return false;
+    }
+
+    auto& slot = slots_[index];
+    
+    if (!slot.has_value()) {
+        return false;
+    } 
+
+    slot.reset();
+    return true;
+    // if (slot->stackSize >= 2) {
+    //     slot->stackSize -= 1;
+    //     return true;
+    // } else {
+    //     slot.reset();
+    //     return true;
+    // }
+}
+
 std::size_t Inventory::slotCount() const {
     return slots_.size();
 }
@@ -50,3 +73,12 @@ const Item* Inventory::itemAt(std::size_t index) const {
     const auto& slot = slots_[index];
     return slot ? &*slot : nullptr;
 }
+
+const Item* Inventory::itemLookup(std::string_view name) const {
+        for (const auto& slot : slots_) {
+            if (slot && slot->name == name) {
+                return &*slot;
+            }
+        }
+        return nullptr;
+    }

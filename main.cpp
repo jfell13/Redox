@@ -132,13 +132,10 @@ int main() {
     const glm::vec3 modelCenter = (model.minimum() + model.maximum()) * 0.5f;
     const glm::vec3 modelOrigin(modelCenter.x, modelCenter.y, model.minimum().z);
     constexpr float modelScale = 1.0f;
-    std::cout << "Loaded character.obj; bounds: ("
-              << model.minimum().x << ", " << model.minimum().y << ", " << model.minimum().z
-              << ") to (" << model.maximum().x << ", " << model.maximum().y
-              << ", " << model.maximum().z << ")\n";
-
-    
-
+    // std::cout << "Loaded character.obj; bounds: ("
+    //           << model.minimum().x << ", " << model.minimum().y << ", " << model.minimum().z
+    //           << ") to (" << model.maximum().x << ", " << model.maximum().y
+    //           << ", " << model.maximum().z << ")\n";
     double previousTime = glfwGetTime();
     bool inventoryOpen = false;
     bool chestInvOpen = false;
@@ -299,21 +296,96 @@ int main() {
         if (chestInvOpen) {
             ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
             if (ImGui::Begin("Chest Inventory", &chestInvOpen)) {
-                if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, 0))) {
-                    // const Inventory& currChestInv = chestInventory.;
-                    for (int i = 0; i < chestInventory.slotCount(); ++i) {
-                        const Item* currItem = chestInventory.itemAt(i);
-                        if (currItem == nullptr) {
-                            ImGui::Text("Chest Inventory slot %d: Empty", i + 1);
+                constexpr int columns = 4;
+                std::vector<bool> selected(chestInventory.slotCount(), false);
+                if (ImGui::BeginTable(
+                    "ChestSlots", columns,
+                                    ImGuiTableFlags_Borders | ImGuiTableFlags_SizingStretchSame
+                                )
+                    ) {
+                    for (std::size_t i = 0; i < chestInventory.slotCount(); ++i) {
+                        ImGui::TableNextColumn();
+                        const Item* item = chestInventory.itemAt(i);
+                        if (item) {
+                            // ImGui::Text("%s x%d", item->name.c_str(), item->stackSize);
+                            // std::string label = std::format("%s x%d", item->name.c_str(), item->stackSize);
+                            // bool isSelected = selected[i];
+                            // ImGui::Selectable(item->name.c_str(), &isSelected);
+                            // selected[i] = isSelected;
+
+                            ImGui::PushID(static_cast<int>(i));
+                            if (ImGui::Selectable(item->name.c_str())) {
+                                Item transferredItem = *item;
+                                transferredItem.stackSize = 1;
+
+                                if (player.addItem(transferredItem)) {
+                                    chestInventory.removeItem(i);
+                                }
+                            }
+                            ImGui::PopID();
+
+                            // bool has_true = std::find(selected.begin(), selected.end(), true) != selected.end();
+                            // if (has_true) {
+                            //     for (const auto& n : selected) {
+                            //         std::cout << n << " ";
+                            //     }
+                            //     std::cout << "\n";
+                            // }
                         } else {
-                            ImGui::Text("Chest Inventory slot %d: %s", i + 1, currItem->name.c_str());
+                            ImGui::TextUnformatted("Empty");
                         }
                     }
+                    ImGui::EndTable();
                 }
-                ImGui::EndChild();
             }
             ImGui::End();
         }
+        //     if (ImGui::Begin("Chest Inventory", &chestInvOpen)) {
+        //         if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, 0))) {
+        //             if (ImGui::TreeNode("Grid")) {
+        //                 // static std::vector<std::vector<char>> selected(
+        //                 //     chestRows, std::vector<char>(chestCols, 0)
+        //                 // );
+        //                 static std::vector<std::vector<char>> selected(
+        //                     chestRows, std::vector<char>(chestCols, 0)
+        //                 );
+        //                 // const float time = (float)ImGui::GetTime();
+        //                 // ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.5f + 0.5f * cosf(time * 2.0f), 0.5f + 0.5f * sinf(time * 3.0f)));
+                        
+        //                 for (int y = 0; y < chestRows; y++)
+        //                     for (int x = 0; x < chestCols; x++)
+        //                     {
+        //                         if (x > 0)
+        //                             ImGui::SameLine();
+        //                             ImGui::Selectable("Sailor");
+        //                         // ImGui::PushID(y * chestCols + x);
+        //                         // if (ImGui::Selectable("Sailor", selected[y][x] != 0, 0, ImVec2(400, 300))) {
+        //                         //     // Toggle clicked cell + toggle neighbors
+        //                         //     selected[y][x] ^= 1;
+        //                         //     if (x > 0) { selected[y][x - 1] ^= 1; }
+        //                         //     if (x < 3) { selected[y][x + 1] ^= 1; }
+        //                         //     if (y > 0) { selected[y - 1][x] ^= 1; }
+        //                         //     if (y < 3) { selected[y + 1][x] ^= 1; }
+        //                         // }
+        //                         // ImGui::PopID();
+        //                     }
+        //                 // ImGui::PopStyleVar();
+        //                 ImGui::TreePop();
+        //             }
+        //             // const Inventory& currChestInv = chestInventory.;
+        //             // for (int i = 0; i < chestInventory.slotCount(); ++i) {
+        //             //     const Item* currItem = chestInventory.itemAt(i);
+        //             //     if (currItem == nullptr) {
+        //             //         ImGui::Text("Chest Inventory slot %d: Empty", i + 1);
+        //             //     } else {
+        //             //         ImGui::Text("Chest Inventory slot %d: %s", i + 1, currItem->name.c_str());
+        //             //     }
+        //             // }
+        //         }
+        //         ImGui::EndChild();
+        //     }
+        //     ImGui::End();
+        // }
         loggerWindow.draw();
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
