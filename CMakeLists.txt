@@ -65,6 +65,7 @@ add_executable(ReDox
     Controls.cpp
     Inventory.cpp
     ItemCatalog.cpp
+    Objects.cpp
     Player.cpp
 )
 

@@ -11,6 +11,7 @@
 #include "imgui_impl_opengl3.h"
 #include <imgui_internal.h>
 #include <Model.h>
+#include <Objects.h>
 #include <Renderer.h>
 #include <Controls.h>
 #include <Item.h>

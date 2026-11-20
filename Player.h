@@ -32,6 +32,7 @@ class Player {
         std::size_t slotCount() const { return inventory_.slotCount(); }
         const Inventory& currentInventory() const {return inventory_; }
         bool addItem(const Item& item) { return inventory_.addItem(item); }
+        bool removeItem(std::size_t index) { return inventory_.removeItem(index); }
         // bool leftClick(GLFWwindow* window) {
         //     return controls_.leftClick(window);
         // }
