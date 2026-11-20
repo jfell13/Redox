@@ -39,34 +39,57 @@ target_include_directories(imgui PUBLIC
 target_link_libraries(imgui PUBLIC glfw OpenGL::GL ${CMAKE_DL_LIBS})
 
 add_library(physics STATIC
-    Physics/Velocity.cpp
-    Physics/constants.cpp
+    src/Physics/Velocity.cpp
+    src/Physics/constants.cpp
 )
 add_library(rendering STATIC
-    Rendering/Camera.cpp
-    Rendering/LoggerWindow.cpp
-    Rendering/MenuBar.cpp
-    Rendering/Model.cpp
-    Rendering/Renderer.cpp
+    src/Rendering/Camera.cpp
+    src/Rendering/InventoryWindow.cpp
+    src/Rendering/Model.cpp
+    src/Rendering/Renderer.cpp
+)
+add_library(gameplay STATIC
+    src/Gameplay/Player.cpp
+    src/Gameplay/Objects.cpp
+    src/Gameplay/Controls.cpp
+)
+add_library(inventory STATIC
+    src/Inventory/Inventory.cpp
+    src/Inventory/ItemCatalog.cpp
+)
+add_library(ui STATIC
+    src/UI/MenuBar.cpp
+    src/UI/LoggerWindow.cpp
 )
 target_include_directories(physics PUBLIC
-    Physics
-    "${CMAKE_CURRENT_SOURCE_DIR}"
+    src/Physics
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 target_include_directories(rendering PUBLIC
-    Rendering
-    "${CMAKE_CURRENT_SOURCE_DIR}"
+    src/Rendering
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
+)
+target_include_directories(gameplay PUBLIC
+    src/Gameplay
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
+)
+target_include_directories(inventory PUBLIC
+    src/Inventory
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
+)
+target_include_directories(ui PUBLIC
+    src/UI
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 target_link_libraries(rendering PUBLIC glad glm::glm glfw OpenGL::GL assimp::assimp imgui)
 target_compile_definitions(rendering PUBLIC GLFW_INCLUDE_NONE)
+target_link_libraries(gameplay PUBLIC rendering inventory)
+target_link_libraries(inventory PUBLIC Boost::json)
+target_link_libraries(ui PUBLIC glm::glm glfw imgui)
+target_compile_definitions(gameplay PUBLIC GLFW_INCLUDE_NONE)
 
 add_executable(ReDox
-    main.cpp
-    Controls.cpp
-    Inventory.cpp
-    ItemCatalog.cpp
-    Objects.cpp
-    Player.cpp
+    src/main.cpp
 )
 
 set_target_properties(ReDox PROPERTIES
@@ -74,22 +97,20 @@ set_target_properties(ReDox PROPERTIES
 )
 
 target_link_libraries(ReDox PRIVATE
-    physics rendering imgui Boost::json
+    physics rendering gameplay inventory ui imgui Boost::json
 )
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     target_compile_options(ReDox PRIVATE -Wall -Wextra)
     target_compile_options(physics PRIVATE -Wall -Wextra)
     target_compile_options(rendering PRIVATE -Wall -Wextra)
+    target_compile_options(gameplay PRIVATE -Wall -Wextra)
+    target_compile_options(inventory PRIVATE -Wall -Wextra)
+    target_compile_options(ui PRIVATE -Wall -Wextra)
 endif()
 
-# Use a stable path regardless of the launch working directory.
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/stylized-character.obj"
-               "${CMAKE_CURRENT_BINARY_DIR}/stylized-character.obj" COPYONLY)
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/stylized-character.mtl"
-    "${CMAKE_CURRENT_BINARY_DIR}/stylized-character.mtl"
-    COPYONLY
-)
+# Resolve runtime assets independently of the launch working directory.
 target_compile_definitions(ReDox PRIVATE
-    ReDox_MODEL_PATH="${CMAKE_CURRENT_BINARY_DIR}/stylized-character.obj"
+    ReDox_MODEL_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/models/stylized-character.obj"
+    ReDox_ITEMS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/data/items.json"
+    ReDox_CRATE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/models/Crate.glb"
 )

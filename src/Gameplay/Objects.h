@@ -24,11 +24,26 @@ class Container{
         const Inventory& currentInventory() const {return inventory_; }
         bool addItem(const Item& item) { return inventory_.addItem(item); }
         bool removeItem(std::size_t index) { return inventory_.removeItem(index); }
+        const Item* itemAt(std::size_t index) const { return inventory_.itemAt(index); }
+
+        const glm::vec3 modelOrigin() const; 
+        glm::mat4 modelTransform() const;
+        const Model& model() const { return model_; }
+        void cleanup() { return model_.cleanup(); }
+
+        bool isClicked(
+            const glm::vec3& rayOrigin,
+            const glm::vec3& rayDir,
+            float& hitDistance
+        );
+
+        bool invOpen = false;
     private:
         glm::vec3 position_;
         Inventory inventory_;
         Model model_;
-        // ClickableModel click_;
+        std::optional<ClickableModel> clicker_;
+        const float modelScale = 1.0f;//0.05f;
 
 };
 

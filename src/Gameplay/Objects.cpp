@@ -35,5 +35,36 @@ Container::Container(
             "Could not load model: " + fileName
         );
     }
+    clicker_.emplace(&model_);
 }
-    
+
+const glm::vec3 Container::modelOrigin() const {
+    const glm::vec3 modelCenter = (model_.minimum() + model_.maximum()) * 0.5f;
+    const glm::vec3 modelOrigin(modelCenter.x, modelCenter.y, model_.minimum().z);
+    return modelOrigin;
+}
+glm::mat4 Container::modelTransform() const {
+    glm::mat4 modelTransform = glm::translate(
+            glm::mat4(1.0f), 
+            position_
+        );
+        modelTransform = glm::scale(
+            modelTransform, 
+            glm::vec3(modelScale)
+        );
+        
+        return modelTransform = glm::translate(modelTransform, -modelOrigin());
+}
+
+bool Container::isClicked(
+    const glm::vec3& rayOrigin,
+    const glm::vec3& rayDir,
+    float& hitDistance
+) {
+    if (!clicker_) {
+        return false;
+    }
+
+    clicker_->transform = modelTransform();
+    return clicker_->IsClicked(rayOrigin, rayDir, hitDistance);
+}
