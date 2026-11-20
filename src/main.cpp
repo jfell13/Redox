@@ -73,6 +73,7 @@ int main() {
     Player player(
         spawnPoint, 
         std::size_t(20),
+        ReDox_MODEL_PATH,
         startingItems
     );
     
@@ -100,24 +101,6 @@ int main() {
         return -1;
     }
 
-    // Model chest;
-    // // if (!chest.load("chest.obj")) {
-    // if (!chest.load(ReDox_CRATE_PATH)) {
-    //     std::cerr << chest.error() << '\n';
-    //     chest.cleanup();
-    //     renderer.cleanup();
-    //     glfwDestroyWindow(window);
-    //     glfwTerminate();
-    //     return -1;
-    // }
-    // const glm::vec3 chestCenter = (chest.minimum() + chest.maximum()) * 0.5f;
-    // const glm::vec3 chestOrigin(chestCenter.x, chestCenter.y, chest.minimum().z);
-    // constexpr float chestScale = 1.0f;//0.05f;
-    // Inventory chestInventory{12};
-    // for (Item item : startingItems) {
-    //     chestInventory.addItem(item);
-    // }
-
     // Attempting to create containers loop for more than 1 "scene" container
     std::vector<std::unique_ptr<Container>> containers_;
     for (int i = 0; i <3; i++) {
@@ -130,37 +113,8 @@ int main() {
             contents
         ));
     }
-
-    // const glm::vec3& chestPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-    // Container chest(
-    //     chestPosition,
-    //     12,
-    //     ReDox_CRATE_PATH,
-    //     startingItems
-    // );
-    // ClickableModel clickableChest{&chest.model()};
-
-    Model model;
-    if (!model.load(ReDox_MODEL_PATH)) {
-        std::cerr << model.error() << '\n';
-        model.cleanup();
-        renderer.cleanup();
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        return -1;
-    }
-
-    // Center the imported geometry in XY and put its lowest Z on the ground.
-    const glm::vec3 modelCenter = (model.minimum() + model.maximum()) * 0.5f;
-    const glm::vec3 modelOrigin(modelCenter.x, modelCenter.y, model.minimum().z);
-    constexpr float modelScale = 1.0f;
-    // std::cout << "Loaded character.obj; bounds: ("
-    //           << model.minimum().x << ", " << model.minimum().y << ", " << model.minimum().z
-    //           << ") to (" << model.maximum().x << ", " << model.maximum().y
-    //           << ", " << model.maximum().z << ")\n";
+    
     double previousTime = glfwGetTime();
-    bool inventoryOpen = false;
-    bool chestInvOpen = false;
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -212,16 +166,14 @@ int main() {
         }
         // Inventory Window
         if (!io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_I, false)) {
-            inventoryOpen = !inventoryOpen;
+            player.invOpen = !player.invOpen;
         }
-        if (inventoryOpen) {
+        if (player.invOpen) {
             ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
-            if (ImGui::Begin("Inventory", &inventoryOpen)) {
+            if (ImGui::Begin("Inventory", &player.invOpen)) {
                 if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, 0))) {
-                    int invCount = player.slotCount();
-                    const Inventory& currInv = player.currentInventory();
-                    for (int i = 0; i < invCount; ++i) {
-                        const Item* currItem = currInv.itemAt(i);
+                    for (std::size_t i = 0; i < player.slotCount(); ++i) {
+                        const Item* currItem = player.itemAt(i);
                         if (currItem == nullptr) {
                             ImGui::Text("Inventory slot %d: Empty", i + 1);
                         } else {
@@ -242,21 +194,7 @@ int main() {
 
         renderer.beginFrame(view, projection);
         renderer.drawXYPlane();
-        // Chest Test
 
-        // const glm::vec3& chestPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-        // glm::mat4 chestTransform = glm::translate(
-        //     glm::mat4(1.0f), 
-        //     glm::vec3(
-        //         0.0f, 
-        //         0.0f, 
-        //         0.0f)
-        //     );
-        // chestTransform = glm::scale(
-        //     chestTransform, 
-        //     glm::vec3(chestScale)
-        // );
-        // chestTransform = glm::translate(chestTransform, -chestOrigin);
         for (const auto& chest : containers_) {
             renderer.drawModel(
                 chest->model(), 
@@ -264,37 +202,10 @@ int main() {
                 particleColor
             );
         }
-        // renderer.drawModel(
-        //     chest.model(), 
-        //     chest.modelTransform(), 
-        //     particleColor
-        // );
 
-        // Player Adjustments
-        const glm::vec3& playerPosition = player.position();
-        glm::mat4 modelTransform = glm::translate(
-            glm::mat4(1.0f), 
-            glm::vec3(
-                playerPosition.x, 
-                playerPosition.y, 
-                0.0f)
-            );
-        modelTransform = glm::rotate(
-            modelTransform,
-            player.yaw(),
-            glm::vec3(0.0f, 0.0f, 1.0f)
-        );
-        modelTransform = glm::scale(
-            modelTransform, 
-            glm::vec3(modelScale)
-        );
-        modelTransform = glm::translate(
-            modelTransform, 
-            -modelOrigin
-        );
         renderer.drawModel(
-            model, 
-            modelTransform, 
+            player.model(), 
+            player.modelTransform(), 
             particleColor
         );
         // Clicking on Chest; Opening Window
@@ -324,21 +235,8 @@ int main() {
                     loggerWindow.addMessage("Chest #" + std::to_string(index) + " was Clicked!");
                 }
             }
-            // clickableChest.transform = chest.modelTransform();
-            // if (clickableChest.IsClicked(rayOrigin, internalMousePos, hitDistance)) {
-            //     chestInvOpen = true;
-            //     loggerWindow.addMessage("Chest was Clicked!");
-            // }   
         }
-        // for (auto& chest : containers_) {
-        //     int index = std::distance(
-        //         containers_.begin(), 
-        //         std::find(
-        //             containers_.begin(),
-        //             containers_.end(),
-        //             chest
-        //         )
-        //     );
+        
         for (std::size_t index = 0; index < containers_.size(); ++index) {
             Container& chest = *containers_[index];
             if (chest.invOpen) {
@@ -418,7 +316,7 @@ int main() {
     }
 
     // OpenGL resources must be released while the context is still current.
-    model.cleanup();
+    player.cleanup();
     for (auto& chest : containers_) {
         chest->cleanup();
     }

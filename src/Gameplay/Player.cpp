@@ -2,6 +2,7 @@
 #include <Controls.h>
 #include <Inventory.h>
 #include <Item.h>
+#include <Model.h>
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,6 +15,7 @@
 Player::Player(
     const glm::vec3& spawnPosition,
     const std::size_t initialCapacity,
+    std::string fileName,
     std::vector<Item> startingItems
     // const std::unordered_map<std::string, int>& initialAttributes,
     // const std::unordered_map<std::string, int>& initialSkills,
@@ -29,6 +31,40 @@ Player::Player(
             );
         } 
     }
+    if (!model_.load(fileName)) {
+        std::cerr << model_.error() << '\n';
+        model_.cleanup();
+        throw std::runtime_error(
+            "Could not load model: " + fileName
+        );
+    }
+}
+
+const glm::vec3 Player::modelOrigin() const {
+    const glm::vec3 modelCenter = (model_.minimum() + model_.maximum()) * 0.5f;
+    const glm::vec3 modelOrigin(modelCenter.x, modelCenter.y, model_.minimum().z);
+    return modelOrigin;
+}
+glm::mat4 Player::modelTransform() const {
+    const glm::vec3& playerPosition = position();
+    glm::mat4 modelTransform = glm::translate(
+            glm::mat4(1.0f), 
+            glm::vec3(
+                playerPosition.x, 
+                playerPosition.y, 
+                0.0f)
+        );
+        modelTransform = glm::rotate(
+            modelTransform,
+            yaw(),
+            glm::vec3(0.0f, 0.0f, 1.0f)
+        );
+        modelTransform = glm::scale(
+            modelTransform, 
+            glm::vec3(modelScale)
+        );
+        
+        return modelTransform = glm::translate(modelTransform, -modelOrigin());
 }
 
 void Player::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos) {

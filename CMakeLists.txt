@@ -49,9 +49,10 @@ add_library(rendering STATIC
     src/Rendering/Renderer.cpp
 )
 add_library(gameplay STATIC
-    src/Gameplay/Player.cpp
-    src/Gameplay/Objects.cpp
     src/Gameplay/Controls.cpp
+    src/Gameplay/Objects.cpp
+    src/Gameplay/Player.cpp
+    src/Gameplay/Scene.cpp
 )
 add_library(inventory STATIC
     src/Inventory/Inventory.cpp
