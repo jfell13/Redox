@@ -59,9 +59,10 @@ add_library(inventory STATIC
     src/Inventory/ItemCatalog.cpp
 )
 add_library(ui STATIC
+    src/UI/LoggerWindow.cpp
     src/UI/MainMenu.cpp
     src/UI/MenuBar.cpp
-    src/UI/LoggerWindow.cpp
+    src/UI/PlayerWindow.cpp
 )
 target_include_directories(physics PUBLIC
     src/Physics
@@ -87,7 +88,7 @@ target_link_libraries(rendering PUBLIC glad glm::glm glfw OpenGL::GL assimp::ass
 target_compile_definitions(rendering PUBLIC GLFW_INCLUDE_NONE)
 target_link_libraries(gameplay PUBLIC rendering inventory)
 target_link_libraries(inventory PUBLIC Boost::json)
-target_link_libraries(ui PUBLIC glm::glm glfw imgui)
+target_link_libraries(ui PUBLIC gameplay glm::glm glfw imgui)
 target_compile_definitions(gameplay PUBLIC GLFW_INCLUDE_NONE)
 
 add_executable(ReDox

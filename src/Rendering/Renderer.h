@@ -16,7 +16,7 @@ public:
         const glm::mat4& view,
         const glm::mat4& projection
     );
-    void drawXYPlane();
+    void drawXYPlane(const glm::vec2& dimensions);
     void drawModel(const Model& model, const glm::mat4& transform,
                    const glm::vec3& color);
     class BoxDraw{

@@ -5,12 +5,17 @@
 #include <Renderer.h>
 #include <Scene.h>
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <random>
 #include <utility>
 #include <vector>
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include <imgui_internal.h>
 
 std::pair<int ,int> windowSize(GLFWwindow* window) {
     int width, height;
@@ -92,8 +97,9 @@ void Scene::beginFrame(Renderer& renderer, const Player& player, int width, int 
         100.0f);
     renderer.beginFrame(view, projection);
 }
+
 void Scene::draw(Renderer& renderer, const Player& player) {
-    renderer.drawXYPlane();
+    renderer.drawXYPlane(glm::vec2(sceneSize_.x, sceneSize_.y));
     const glm::vec3 particleColor(1.0f, 0.5f, 0.2f);
     for (const auto& chest : containers_) {
         renderer.drawModel(
@@ -109,3 +115,67 @@ void Scene::draw(Renderer& renderer, const Player& player) {
         particleColor
     );
 }
+
+void Scene::objectHit(glm::vec3 rayOrigin, glm::vec3 rayDirection) {
+    Container* nearestContainer = nullptr;
+    float nearestDistance = std::numeric_limits<float>::max();
+    for (std::size_t index = 0; index < containers_.size(); ++index) {
+        Container& chest = *containers_[index];
+        float candidateDistance = 0.0f;
+        if (chest.isClicked(rayOrigin, rayDirection, candidateDistance)) {
+            if (candidateDistance < nearestDistance) {
+                nearestDistance = candidateDistance;
+                nearestContainer = &chest;
+            }
+        }
+    }
+    if (nearestContainer) {
+        nearestContainer->invOpen = true;
+    }
+}
+
+void Scene::containerWindow(Player& player) {
+    for (std::size_t index = 0; index < containers_.size(); ++index) {
+        Container& chest = *containers_[index];
+        if (chest.invOpen) {
+            ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
+            const std::string windowTitle = "Chest #" + std::to_string(index) + " Inventory";
+            if (ImGui::Begin(windowTitle.c_str(), &chest.invOpen)) {
+                constexpr int columns = 4;
+                // std::vector<bool> selected(chest.slotCount(), false);
+                if (ImGui::BeginTable(
+                    "ChestSlots", columns,
+                                    ImGuiTableFlags_Borders | ImGuiTableFlags_SizingStretchSame
+                                )
+                    ) {
+                    for (std::size_t i = 0; i < chest.slotCount(); ++i) {
+                        ImGui::TableNextColumn();
+                        const Item* item = chest.itemAt(i);
+                        if (item) {
+                            ImGui::PushID(static_cast<int>(i));
+                            if (ImGui::Selectable(item->name.c_str())) {
+                                Item transferredItem = *item;
+                                transferredItem.stackSize = 1;
+                                if (player.addItem(transferredItem)) {
+                                    chest.removeItem(i);
+                                }
+                            }
+                            ImGui::PopID();
+                        } else {
+                            ImGui::TextUnformatted("Empty");
+                        }
+                    }
+                    ImGui::EndTable();
+                }
+            }
+            ImGui::End();
+        }
+    }
+}
+
+void Scene::sceneCleanup() {
+    for (auto& chest : containers_) {
+        chest->cleanup();
+    }
+}
+

@@ -286,8 +286,18 @@ void Renderer::cleanup() {
     planeVAO = planeVBO = 0;
 }
 
-void Renderer::drawXYPlane() {
-    const glm::mat4 model(1.0f);
+void Renderer::drawXYPlane(const glm::vec2& dimensions) {
+    glm::mat4 model = glm::translate(
+        glm::mat4(1.0f),
+        glm::vec3(dimensions.x * 0.5f, dimensions.y * 0.5f, 0.0f)
+    );
+
+    model = glm::scale(
+        model,
+        glm::vec3(dimensions.x / 100.0f,
+                dimensions.y / 100.0f,
+                1.0f)
+    );
 
     glUniformMatrix4fv(
         modelLoc, 1, GL_FALSE, glm::value_ptr(model)
@@ -391,15 +401,15 @@ void Renderer::drawParticle(
     float radius,
     const glm::vec3& color
 ) {
-    glm::mat4 particleModel(1.0f);
+    glm::mat4 model(1.0f);
 
-    particleModel = glm::translate(
-        particleModel,
+    model = glm::translate(
+        model,
         position
     );
 
-    particleModel = glm::scale(
-        particleModel,
+    model = glm::scale(
+        model,
         glm::vec3(radius)
     );
 
@@ -407,7 +417,7 @@ void Renderer::drawParticle(
         modelLoc,
         1,
         GL_FALSE,
-        glm::value_ptr(particleModel)
+        glm::value_ptr(model)
     );
 
     glUniform3f(
