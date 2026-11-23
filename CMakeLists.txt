@@ -59,6 +59,7 @@ add_library(inventory STATIC
     src/Inventory/ItemCatalog.cpp
 )
 add_library(ui STATIC
+    src/UI/MainMenu.cpp
     src/UI/MenuBar.cpp
     src/UI/LoggerWindow.cpp
 )

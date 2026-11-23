@@ -36,7 +36,7 @@ class Container{
             const glm::vec3& rayDir,
             float& hitDistance
         );
-
+        const glm::vec3& position() const { return position_; }
         bool invOpen = false;
     private:
         glm::vec3 position_;

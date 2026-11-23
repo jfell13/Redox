@@ -8,6 +8,7 @@
 #include <iostream>
 #include <utility>
 #include <LoggerWindow.h>
+#include <UIElements.h>
 
 LoggerWindow::LoggerWindow(
         float init_xStreamPos,
