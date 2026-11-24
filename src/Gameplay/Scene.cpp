@@ -1,3 +1,4 @@
+#include <Collisions.h>
 #include <Item.h>
 #include <ItemCatalog.h>
 #include <Objects.h>
@@ -171,6 +172,24 @@ void Scene::containerWindow(Player& player) {
             ImGui::End();
         }
     }
+}
+
+bool Scene::collisionDetection(Player& player) {
+    const AABB& a = player.model().getWorldAABB(
+        player.model().modelBounds(),
+        player.modelTransform()
+    );
+    for (const auto& chest : containers_) {
+        const AABB b = chest->model().getWorldAABB(
+            chest->model().modelBounds(),
+            chest->modelTransform()
+        );
+        bool collision = checkOverlap(a, b);
+        if (collision) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Scene::sceneCleanup() {

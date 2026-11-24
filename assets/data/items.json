@@ -10,7 +10,7 @@
   {
     "id": "axe",
     "name": "Axe",
-    "thumbnail":"battle-axe-scandinavian.png",
+    "thumbnail":"battle-axe-scandinavia.png",
     "weight": 5,
     "maxStackSize": 1,
     "description": "An axe."

@@ -22,6 +22,7 @@ class Scene{
         void draw(Renderer& renderer, const Player& player);
         void objectHit(glm::vec3 rayOrigin, glm::vec3 rayDirection);
         void containerWindow(Player& player);
+        bool collisionDetection(Player& player);
         void sceneCleanup();
     private:
         const glm::vec3 sceneSize_ = glm::vec3(100.0f, 100.0f, 50.0f);

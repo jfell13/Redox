@@ -197,43 +197,12 @@ int main() {
                 );
                 scene.objectHit(rayOrigin, rayDirection);
             }
+
+            if (scene.collisionDetection(player)) {
+                loggerWindow.addMessage("COLLISION");
+            }
             scene.containerWindow(player);
-            // for (std::size_t index = 0; index < containers_.size(); ++index) {
-            //     Container& chest = *containers_[index];
-            //     if (chest.invOpen) {
-            //         ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
-            //         const std::string windowTitle = "Chest #" + std::to_string(index) + " Inventory";
-            //         if (ImGui::Begin(windowTitle.c_str(), &chest.invOpen)) {
-            //             constexpr int columns = 4;
-            //             std::vector<bool> selected(chest.slotCount(), false);
-            //             if (ImGui::BeginTable(
-            //                 "ChestSlots", columns,
-            //                                 ImGuiTableFlags_Borders | ImGuiTableFlags_SizingStretchSame
-            //                             )
-            //                 ) {
-            //                 for (std::size_t i = 0; i < chest.slotCount(); ++i) {
-            //                     ImGui::TableNextColumn();
-            //                     const Item* item = chest.itemAt(i);
-            //                     if (item) {
-            //                         ImGui::PushID(static_cast<int>(i));
-            //                         if (ImGui::Selectable(item->name.c_str())) {
-            //                             Item transferredItem = *item;
-            //                             transferredItem.stackSize = 1;
-            //                             if (player.addItem(transferredItem)) {
-            //                                 chest.removeItem(i);
-            //                             }
-            //                         }
-            //                         ImGui::PopID();
-            //                     } else {
-            //                         ImGui::TextUnformatted("Empty");
-            //                     }
-            //                 }
-            //                 ImGui::EndTable();
-            //             }
-            //         }
-            //         ImGui::End();
-            //     }
-            // }
+            
             loggerWindow.draw();
         }
         ImGui::Render();

@@ -48,6 +48,7 @@ target_include_directories(stb_image PUBLIC
 add_library(physics STATIC
     src/Physics/Velocity.cpp
     src/Physics/constants.cpp
+    src/Physics/Collisions.cpp
 )
 add_library(rendering STATIC
     src/Rendering/Camera.cpp
@@ -93,8 +94,9 @@ target_include_directories(ui PUBLIC
 )
 target_link_libraries(rendering PUBLIC glad glm::glm glfw OpenGL::GL assimp::assimp imgui stb_image)
 target_compile_definitions(rendering PUBLIC GLFW_INCLUDE_NONE)
-target_link_libraries(gameplay PUBLIC rendering inventory stb_image)
+target_link_libraries(gameplay PUBLIC rendering inventory physics stb_image)
 target_link_libraries(inventory PUBLIC Boost::json)
+target_link_libraries(physics PUBLIC glad glm::glm glfw OpenGL::GL rendering)
 target_link_libraries(ui PUBLIC gameplay glm::glm glfw imgui stb_image)
 target_compile_definitions(gameplay PUBLIC GLFW_INCLUDE_NONE)
 

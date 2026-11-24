@@ -1,6 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
-
+#include <algorithm>
+#include <limits>
 #include <string>
 #include <vector>
 #include <glm/glm.hpp>
@@ -20,6 +21,9 @@ struct AABB {
         min = glm::min(min, point);
         max = glm::max(max, point);
     }
+
+    glm::vec3 getCenter() const { return (min + max) * 0.5f; }
+    glm::vec3 getExtents() const { return (max - min) * 0.5f; }
 };
 // Static mesh data uploaded to OpenGL. Load/cleanup require a current context.
 class Model {
@@ -28,7 +32,8 @@ class Model {
         ~Model() { cleanup(); }
         Model(const Model&) = delete;
         Model& operator=(const Model&) = delete;
-
+        const AABB& modelBounds() const {return bounds_;}
+        AABB getWorldAABB(const AABB& modelBox, const glm::mat4& modelMatrix) const;
         bool load(const std::string& path);
         void cleanup();
         const glm::vec3& minimum() const { return boundsMin; }
@@ -40,6 +45,7 @@ class Model {
 
     private:
         friend class Renderer;
+        AABB bounds_;
         struct MaterialRange {
             GLint first;
             GLsizei count;
@@ -58,16 +64,10 @@ class Model {
 // Clickable Model wrapper 
 class ClickableModel {
     public:
-        explicit ClickableModel(const Model* existingModel) : model(existingModel) {
-            if (model) {
-                bounds.min = model->minimum();
-                bounds.max = model->maximum();
-            }
-        }
+        explicit ClickableModel(const Model* existingModel) 
+            : model(existingModel) {}
         glm::mat4 transform{1.0f};
-
         bool isSelected = false;
-
         // void OnClick() {
         //     isSelected = !isSelected;
             // Trigger highlight shader, UI popup, etc.
@@ -78,11 +78,12 @@ class ClickableModel {
             const glm::vec3 localOrigin(worldToLocal * glm::vec4(rayOrigin, 1.0f));
             const glm::vec3 localDirection(worldToLocal * glm::vec4(rayDir, 0.0f));
 
-            return IntersectRayAABB(localOrigin, localDirection, bounds, outDistance);
+            return IntersectRayAABB(
+                localOrigin, localDirection, model->modelBounds(), outDistance
+            );
         }
     private:
         const Model* model = nullptr;
-        AABB bounds;
         static bool IntersectRayAABB(
             const glm::vec3& rayOrigin, 
             const glm::vec3& rayDir, 

@@ -45,6 +45,7 @@ const glm::vec3 Player::modelOrigin() const {
     const glm::vec3 modelOrigin(modelCenter.x, modelCenter.y, model_.minimum().z);
     return modelOrigin;
 }
+
 glm::mat4 Player::modelTransform() const {
     const glm::vec3& playerPosition = position();
     glm::mat4 modelTransform = glm::translate(

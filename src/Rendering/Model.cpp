@@ -5,6 +5,8 @@
 #include <assimp/postprocess.h>
 #include <limits>
 #include <vector>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 bool Model::load(const std::string& path) {
     errorMessage.clear();
@@ -83,6 +85,8 @@ bool Model::load(const std::string& path) {
     materialRanges = std::move(loadedRanges);
     boundsMin = minimum;
     boundsMax = maximum;
+    bounds_.min = minimum;
+    bounds_.max = maximum;
     vertexCount = static_cast<GLsizei>(positions.size() / 3);
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -94,6 +98,27 @@ bool Model::load(const std::string& path) {
     glEnableVertexAttribArray(0);
     glBindVertexArray(0);
     return true;
+}
+
+AABB Model::getWorldAABB(const AABB& modelBox, const glm::mat4& modelMatrix) const {
+    glm::vec3 modelCenter = modelBox.getCenter();
+    glm::vec3 modelExtents = modelBox.getExtents();
+
+    // Transform center to world space
+    glm::vec3 worldCenter = glm::vec3(modelMatrix * glm::vec4(modelCenter, 1.0f));
+
+    // Extract absolute basis vectors (handles rotation and scale)
+    glm::vec3 right   = glm::abs(glm::vec3(modelMatrix[0]));
+    glm::vec3 up      = glm::abs(glm::vec3(modelMatrix[1]));
+    glm::vec3 forward = glm::abs(glm::vec3(modelMatrix[2]));
+
+    // Project local extents onto world axes
+    const glm::vec3 worldExtents =
+        right * modelExtents.x +
+        up * modelExtents.y +
+        forward * modelExtents.z;
+
+    return { worldCenter - worldExtents, worldCenter + worldExtents };
 }
 
 void Model::cleanup() {
