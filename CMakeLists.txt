@@ -38,6 +38,13 @@ target_include_directories(imgui PUBLIC
 )
 target_link_libraries(imgui PUBLIC glfw OpenGL::GL ${CMAKE_DL_LIBS})
 
+add_library(stb_image STATIC
+    external/stb_impl.cpp
+)
+target_include_directories(stb_image PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/external"
+)
+
 add_library(physics STATIC
     src/Physics/Velocity.cpp
     src/Physics/constants.cpp
@@ -84,11 +91,11 @@ target_include_directories(ui PUBLIC
     src/UI
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
-target_link_libraries(rendering PUBLIC glad glm::glm glfw OpenGL::GL assimp::assimp imgui)
+target_link_libraries(rendering PUBLIC glad glm::glm glfw OpenGL::GL assimp::assimp imgui stb_image)
 target_compile_definitions(rendering PUBLIC GLFW_INCLUDE_NONE)
-target_link_libraries(gameplay PUBLIC rendering inventory)
+target_link_libraries(gameplay PUBLIC rendering inventory stb_image)
 target_link_libraries(inventory PUBLIC Boost::json)
-target_link_libraries(ui PUBLIC gameplay glm::glm glfw imgui)
+target_link_libraries(ui PUBLIC gameplay glm::glm glfw imgui stb_image)
 target_compile_definitions(gameplay PUBLIC GLFW_INCLUDE_NONE)
 
 add_executable(ReDox
@@ -116,4 +123,8 @@ target_compile_definitions(ReDox PRIVATE
     ReDox_MODEL_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/models/stylized-character.obj"
     ReDox_ITEMS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/data/items.json"
     ReDox_CRATE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/models/Crate.glb"
+    ReDox_ICONS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/icons"
+)
+target_compile_definitions(ui PRIVATE
+    ReDox_ICONS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/icons"
 )

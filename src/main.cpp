@@ -26,7 +26,6 @@
 #include <Renderer.h>
 #include <Scene.h>
 
-
 enum States {
     MAINMENU,
     GAME,
@@ -64,7 +63,6 @@ int main() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330 core");
@@ -81,6 +79,7 @@ int main() {
         Item item{};
         item.itemID = id;
         item.name = definition.name;
+        item.thumbnail = definition.thumbnail;
         item.itemWeight = definition.weight;
         item.maxStackSize = definition.maxStackSize;
         item.itemDescription = definition.description;
@@ -104,18 +103,6 @@ int main() {
         glfwTerminate();
         return -1;
     }
-    // Attempting to create containers loop for more than 1 "scene" container
-    // std::vector<std::unique_ptr<Container>> containers_;
-    // for (int i = 0; i <3; i++) {
-    //     const glm::vec3& chestPosition = glm::vec3(i * 4.0f, i * 4.0f, 0.0f);
-    //     std::vector<Item> contents(startingItems.begin(), startingItems.begin() + 1 + i);
-    //     containers_.push_back(std::make_unique<Container>(
-    //         chestPosition,
-    //         i+4,
-    //         ReDox_CRATE_PATH,
-    //         contents
-    //     ));
-    // }
     LoggerWindow loggerWindow(20.0f, 20.0f, 260.0f, 120.0f);
     // Scene Initiialization
     Scene scene;
@@ -140,8 +127,7 @@ int main() {
             glfwWaitEvents();
             previousTime = glfwGetTime();
             continue;
-        }
-        
+        } 
         // ImGui frame setup
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -189,21 +175,6 @@ int main() {
             }
             if (player.invOpen) {
                 playerWindow.playerWindow(player);
-                // ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
-                // if (ImGui::Begin("Inventory", &player.invOpen)) {
-                //     if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, 0))) {
-                //         for (std::size_t i = 0; i < player.slotCount(); ++i) {
-                //             const Item* currItem = player.itemAt(i);
-                //             if (currItem == nullptr) {
-                //                 ImGui::Text("Inventory slot %zu: Empty", i + 1);
-                //             } else {
-                //                 ImGui::Text("Inventory slot %zu: %s", i + 1, currItem->name.c_str());
-                //             }
-                //         }
-                //     }
-                //     ImGui::EndChild();
-                // }
-                // ImGui::End();
             }
             const glm::mat4 view = player.viewMatrix();
             const glm::mat4 projection = glm::perspective(
@@ -211,25 +182,9 @@ int main() {
                 static_cast<float>(width) / height, 
                 0.1f, 
                 100.0f);
-            // renderer.beginFrame(view, projection);
-            // renderer.drawXYPlane();
-
-            // for (const auto& chest : containers_) {
-            //     renderer.drawModel(
-            //         chest->model(), 
-            //         chest->modelTransform(), 
-            //         particleColor
-            //     );
-            // }
-            // renderer.drawModel(
-            //     player.model(), 
-            //     player.modelTransform(), 
-            //     particleColor
-            // );
             scene.beginFrame(renderer, player, width, height);
             scene.draw(renderer, player);
             // Clicking on Chest; Opening Window
-            // float hitDistance = 0.0f;
             if (!io.WantCaptureMouse && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
                 ImVec2 mousePos = ImGui::GetMousePos();
                 glm::vec3 rayOrigin = glm::vec3(glm::inverse(view)[3]);
@@ -241,15 +196,6 @@ int main() {
                     windowHeight, view, projection
                 );
                 scene.objectHit(rayOrigin, rayDirection);
-                
-                // for (std::size_t index = 0; index < containers_.size(); ++index) {
-                //     Container& chest = *containers_[index];
-                    
-                //     if (chest.isClicked(rayOrigin, internalMousePos, hitDistance)) {
-                //         chest.invOpen = true;
-                //         loggerWindow.addMessage("Chest #" + std::to_string(index) + " was Clicked!");
-                //     }
-                // }
             }
             scene.containerWindow(player);
             // for (std::size_t index = 0; index < containers_.size(); ++index) {
@@ -295,10 +241,8 @@ int main() {
         glfwSwapBuffers(window);
     }
     player.cleanup();
+    playerWindow.playerWindowCleanup();
     scene.sceneCleanup();
-    // for (auto& chest : containers_) {
-    //     chest->cleanup();
-    // }
     renderer.cleanup();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

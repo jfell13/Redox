@@ -7,6 +7,7 @@
 
 struct ItemDefinition {
     std::string name;
+    std::string thumbnail;
     float weight;
     int maxStackSize;
     std::string description;

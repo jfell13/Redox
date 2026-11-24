@@ -21,6 +21,7 @@ void ItemCatalog::load(const std::filesystem::path& path) {
 
         ItemDefinition definition{
             json::value_to<std::string>(record.at("name")),
+            json::value_to<std::string>(record.at("thumbnail")),
             json::value_to<float>(record.at("weight")),
             json::value_to<int>(record.at("maxStackSize")),
             json::value_to<std::string>(record.at("description"))

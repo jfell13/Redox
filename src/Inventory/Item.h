@@ -5,6 +5,7 @@
 struct Item {
     std::string name;
     std::string itemID;
+    std::string thumbnail;
     float itemWeight;
     int maxStackSize;
     int stackSize;
