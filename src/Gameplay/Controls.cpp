@@ -57,8 +57,14 @@ void PlayerControls::updateMovement(GLFWwindow* window, float deltaTime) {
     const float turnInput =
         static_cast<float>(pressed(window, GLFW_KEY_A)) -
         static_cast<float>(pressed(window, GLFW_KEY_D));
-    yaw_ += turnInput * modelTurnSpeed * deltaTime;
+    const float turnAngle = turnInput * modelTurnSpeed * deltaTime;
+    yaw_ += turnAngle;
+    cameraAzimuth_ += turnAngle;
     yaw_ = std::remainder(yaw_, glm::radians(360.0f));
+
+    cameraAzimuth_ = std::remainder(
+        cameraAzimuth_, glm::radians(360.0f)
+    );
     
     const bool movingForward = pressed(window, GLFW_KEY_W);
     const bool movingBackward = pressed(window, GLFW_KEY_S);

@@ -1,6 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 #include <algorithm>
+#include <format>
 #include <limits>
 #include <string>
 #include <vector>
@@ -16,12 +17,17 @@
 struct AABB {
     glm::vec3 min{std::numeric_limits<float>::max()};
     glm::vec3 max{std::numeric_limits<float>::lowest()};
-
     void ExpandToFit(const glm::vec3& point) {
         min = glm::min(min, point);
         max = glm::max(max, point);
     }
-
+    std::string toString() const {
+        return std::format(
+            "AABB[Min: ({:.2f}, {:.2f}, {:.2f}), Max: ({:.2f}, {:.2f}, {:.2f})]",
+            min.x, min.y, min.z,
+            max.x, max.y, max.z
+        );
+    }
     glm::vec3 getCenter() const { return (min + max) * 0.5f; }
     glm::vec3 getExtents() const { return (max - min) * 0.5f; }
 };

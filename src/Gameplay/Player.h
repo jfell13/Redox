@@ -25,6 +25,9 @@ class Player {
             // const std::unordered_map<std::string, int>& iniitalFlaws
         );
         const glm::vec3& position() const { return controls_.position(); }
+        void setPosition(const glm::vec3& position) {
+            controls_.setPosition(position);
+        }
         const glm::vec3 modelOrigin() const; 
         glm::mat4 modelTransform() const;
         const Model& model() const { return model_; }
@@ -42,7 +45,7 @@ class Player {
         bool removeItem(std::size_t index) { return inventory_.removeItem(index); }
         const Item* itemAt(std::size_t index) const { return inventory_.itemAt(index); }
 
-         bool invOpen = false;
+        bool invOpen = false;
         // bool leftClick(GLFWwindow* window) {
         //     return controls_.leftClick(window);
         // }

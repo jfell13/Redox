@@ -15,6 +15,9 @@ public:
     const glm::vec3& position() const { return position_; }
     float yaw() const { return yaw_; }
     
+    void setPosition(const glm::vec3& position) {
+        position_ = position;
+    }
     // bool leftClick(GLFWwindow* window);
 
 private:

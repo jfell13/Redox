@@ -2,6 +2,8 @@
 #define COLLISIONS_H
 #include <Model.h>
 
-bool checkOverlap(const AABB& a, const AABB& b);
+bool checkOverlap(const AABB& playerAABB, const AABB& modelAABB);
+
+
 
 #endif

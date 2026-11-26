@@ -11,6 +11,9 @@
 #include <random>
 #include <utility>
 #include <vector>
+#include <string>
+#include <iostream>
+#include <format>
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
 #include "imgui.h"
@@ -175,21 +178,46 @@ void Scene::containerWindow(Player& player) {
 }
 
 bool Scene::collisionDetection(Player& player) {
-    const AABB& a = player.model().getWorldAABB(
+    const AABB& playerAABB = player.model().getWorldAABB(
         player.model().modelBounds(),
         player.modelTransform()
     );
     for (const auto& chest : containers_) {
-        const AABB b = chest->model().getWorldAABB(
+        const AABB modelAABB = chest->model().getWorldAABB(
             chest->model().modelBounds(),
             chest->modelTransform()
         );
-        bool collision = checkOverlap(a, b);
+        bool collision = checkOverlap(playerAABB, modelAABB);
         if (collision) {
             return true;
         }
     }
     return false;
+}
+
+void Scene::resolveCollision(Player& player, glm::vec3 previousPosition) {
+    glm::vec3 movement = player.position() - previousPosition;
+    glm::vec3 accepted = previousPosition;
+    // X-axis 
+    glm::vec3 xCandidate = accepted + glm::vec3(movement.x, 0.0f, 0.0f);
+    player.setPosition(xCandidate);
+    if (!collisionDetection(player)) {
+        accepted = xCandidate;
+    }
+    // Y-axis
+    glm::vec3 yCandidate = accepted + glm::vec3(0.0f, movement.y, 0.0f);
+    player.setPosition(yCandidate);
+    if (!collisionDetection(player)) {
+        accepted = yCandidate;
+    }
+    // Z-axis
+    glm::vec3 zCandidate = accepted + glm::vec3(0.0f, 0.0f, movement.z);
+    player.setPosition(zCandidate);
+    if (!collisionDetection(player)) {
+        accepted = zCandidate;
+    }
+    // set collision adjusted position
+    player.setPosition(accepted);
 }
 
 void Scene::sceneCleanup() {

@@ -53,7 +53,8 @@ glm::mat4 Player::modelTransform() const {
             glm::vec3(
                 playerPosition.x, 
                 playerPosition.y, 
-                0.0f)
+                playerPosition.z
+            )
         );
         modelTransform = glm::rotate(
             modelTransform,

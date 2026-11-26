@@ -17,12 +17,13 @@ class Scene{
         void setStartingItems(std::vector<Item> startingItems);
         void loadCatalog(std::string fileName);
         bool initializeContainers(int containerPop, std::string fileName);
-
+        const glm::vec3& sceneSize() const { return sceneSize_; }
         void beginFrame(Renderer& renderer, const Player& player, int width, int height);
         void draw(Renderer& renderer, const Player& player);
         void objectHit(glm::vec3 rayOrigin, glm::vec3 rayDirection);
         void containerWindow(Player& player);
         bool collisionDetection(Player& player);
+        void resolveCollision(Player& player, glm::vec3 previousPosition);
         void sceneCleanup();
     private:
         const glm::vec3 sceneSize_ = glm::vec3(100.0f, 100.0f, 50.0f);

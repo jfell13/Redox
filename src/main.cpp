@@ -86,15 +86,7 @@ int main() {
         item.stackSize = 1;  // Give the player one of each catalog item.
         startingItems.push_back(item);
     }
-    // Player initiallization
-    glm::vec3 spawnPoint = glm::vec3(15.0f, 15.0f, 0.5f);
-    Player player(
-        spawnPoint, 
-        std::size_t(20),
-        ReDox_MODEL_PATH,
-        startingItems
-    );
-    PlayerWindow playerWindow;
+    
     Renderer renderer;
     if (!renderer.initialize()) {
         std::cerr << "Renderer initialization failed\n";
@@ -108,6 +100,17 @@ int main() {
     Scene scene;
     scene.setStartingItems(startingItems);
     scene.initializeContainers(4, ReDox_CRATE_PATH);
+
+    // Player initiallization
+    glm::vec3 spawnPoint = glm::vec3(scene.sceneSize().x / 2, scene.sceneSize().y / 2, 0.0f);
+    Player player(
+        spawnPoint, 
+        std::size_t(20),
+        ReDox_MODEL_PATH,
+        startingItems
+    );
+    PlayerWindow playerWindow;
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -166,9 +169,17 @@ int main() {
             }
             // Framebuffer pixels also handle Retina displays and monitor changes.
             glViewport(0, 0, width, height);
+
+            const glm::vec3 previousPosition = player.position(); // Saving player position
+            
             if (!io.WantCaptureKeyboard) {
                 player.updateControls(window, deltaTime);
+                if (scene.collisionDetection(player)) {
+                    loggerWindow.addMessage("COLLISION");
+                    scene.resolveCollision(player, previousPosition);
+                }
             }
+            
             // Inventory Window
             if (!io.WantTextInput && ImGui::IsKeyPressed(ImGuiKey_I, false)) {
                 player.invOpen = !player.invOpen;
@@ -198,9 +209,7 @@ int main() {
                 scene.objectHit(rayOrigin, rayDirection);
             }
 
-            if (scene.collisionDetection(player)) {
-                loggerWindow.addMessage("COLLISION");
-            }
+            
             scene.containerWindow(player);
             
             loggerWindow.draw();
