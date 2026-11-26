@@ -185,7 +185,15 @@ int main() {
                 player.invOpen = !player.invOpen;
             }
             if (player.invOpen) {
-                playerWindow.playerWindow(player);
+                // playerWindow.playerWindow(player);
+                std::optional<std::size_t>  clickedSlot = playerWindow.playerWindow(player);
+                if (clickedSlot) {
+                    const std::string message =
+                        "Clicked slot: " + std::to_string(*clickedSlot);
+                    loggerWindow.addMessage(message);                    
+                    scene.playerItemTransfer(player, clickedSlot);
+                }
+
             }
             const glm::mat4 view = player.viewMatrix();
             const glm::mat4 projection = glm::perspective(

@@ -1,10 +1,13 @@
 #ifndef UIELEMENTS_H
 #define UIELEMENTS_H
-#include <vector>
-#include <string>
 #include <deque>
-#include <utility>
+#include <filesystem>
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <string>
+#include <utility>
+#include <vector>
 
 struct LogEntry {
     std::string message;
@@ -34,5 +37,7 @@ struct GUIelement {
 	glm::vec3 textColor;
 	glm::vec3 backgroundColor;
 };
+
+GLuint loadIconTexture(const std::filesystem::path& path);
 
 #endif

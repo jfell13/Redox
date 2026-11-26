@@ -52,7 +52,6 @@ add_library(physics STATIC
 )
 add_library(rendering STATIC
     src/Rendering/Camera.cpp
-    src/Rendering/InventoryWindow.cpp
     src/Rendering/Model.cpp
     src/Rendering/Renderer.cpp
 )
@@ -66,6 +65,16 @@ add_library(inventory STATIC
     src/Inventory/Inventory.cpp
     src/Inventory/ItemCatalog.cpp
 )
+add_library(inventory_ui STATIC
+    src/UI/InventoryWindow.cpp
+    src/UI/UIElements.cpp
+)
+target_include_directories(inventory_ui PUBLIC src/UI)
+target_link_libraries(inventory_ui PUBLIC inventory glad imgui stb_image)
+target_compile_definitions(inventory_ui PRIVATE
+    ReDox_ICONS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/icons"
+)
+
 add_library(ui STATIC
     src/UI/LoggerWindow.cpp
     src/UI/MainMenu.cpp
@@ -94,10 +103,10 @@ target_include_directories(ui PUBLIC
 )
 target_link_libraries(rendering PUBLIC glad glm::glm glfw OpenGL::GL assimp::assimp imgui stb_image)
 target_compile_definitions(rendering PUBLIC GLFW_INCLUDE_NONE)
-target_link_libraries(gameplay PUBLIC rendering inventory physics stb_image)
+target_link_libraries(gameplay PUBLIC rendering inventory physics inventory_ui)
 target_link_libraries(inventory PUBLIC Boost::json)
 target_link_libraries(physics PUBLIC glad glm::glm glfw OpenGL::GL rendering)
-target_link_libraries(ui PUBLIC gameplay glm::glm glfw imgui stb_image)
+target_link_libraries(ui PUBLIC gameplay inventory_ui glm::glm glfw imgui)
 target_compile_definitions(gameplay PUBLIC GLFW_INCLUDE_NONE)
 
 add_executable(ReDox

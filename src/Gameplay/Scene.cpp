@@ -1,4 +1,5 @@
 #include <Collisions.h>
+#include <InventoryWindow.h>
 #include <Item.h>
 #include <ItemCatalog.h>
 #include <Objects.h>
@@ -141,38 +142,40 @@ void Scene::objectHit(glm::vec3 rayOrigin, glm::vec3 rayDirection) {
 void Scene::containerWindow(Player& player) {
     for (std::size_t index = 0; index < containers_.size(); ++index) {
         Container& chest = *containers_[index];
-        if (chest.invOpen) {
-            ImGui::SetNextWindowSize(ImVec2(400, 300), ImGuiCond_FirstUseEver);
-            const std::string windowTitle = "Chest #" + std::to_string(index) + " Inventory";
-            if (ImGui::Begin(windowTitle.c_str(), &chest.invOpen)) {
-                constexpr int columns = 4;
-                // std::vector<bool> selected(chest.slotCount(), false);
-                if (ImGui::BeginTable(
-                    "ChestSlots", columns,
-                                    ImGuiTableFlags_Borders | ImGuiTableFlags_SizingStretchSame
-                                )
-                    ) {
-                    for (std::size_t i = 0; i < chest.slotCount(); ++i) {
-                        ImGui::TableNextColumn();
-                        const Item* item = chest.itemAt(i);
-                        if (item) {
-                            ImGui::PushID(static_cast<int>(i));
-                            if (ImGui::Selectable(item->name.c_str())) {
-                                Item transferredItem = *item;
-                                transferredItem.stackSize = 1;
-                                if (player.addItem(transferredItem)) {
-                                    chest.removeItem(i);
-                                }
-                            }
-                            ImGui::PopID();
-                        } else {
-                            ImGui::TextUnformatted("Empty");
-                        }
-                    }
-                    ImGui::EndTable();
+
+        const auto clickedSlot = chest.showInventory(
+            "Chest #" + std::to_string(index) + " Inventory"
+        );
+
+        if (clickedSlot) {
+            const Item* item = chest.itemAt(*clickedSlot);
+
+            if (item) {
+                Item transferredItem = *item;
+                transferredItem.stackSize = 1;
+
+                if (player.addItem(transferredItem)) {
+                    chest.removeItem(*clickedSlot);
                 }
             }
-            ImGui::End();
+        }
+    }
+}
+
+void Scene::playerItemTransfer(Player& player, std::optional<std::size_t> clickedSlot) {
+    if (!clickedSlot) { return; }
+    for (std::size_t index = 0; index < containers_.size(); ++index) { 
+        Container& chest = *containers_[index];
+        if (chest.invOpen) {
+            const Item* item = player.itemAt(*clickedSlot);
+            if (item) {
+                Item transferredItem = *item;
+                transferredItem.stackSize = 1;
+                if (chest.addItem(transferredItem)) {
+                    player.removeItem(*clickedSlot);
+                    return;
+                }
+            }
         }
     }
 }

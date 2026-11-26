@@ -1,6 +1,7 @@
 #ifndef OBJECTS_H
 #define OBJECTS_H
 #include <Inventory.h>
+#include <InventoryWindow.h>
 #include <Item.h>
 #include <Model.h>
 #include <optional>
@@ -26,10 +27,17 @@ class Container{
         bool removeItem(std::size_t index) { return inventory_.removeItem(index); }
         const Item* itemAt(std::size_t index) const { return inventory_.itemAt(index); }
 
+        std::optional<std::size_t> showInventory(const std::string& title) {
+            return inventoryWindow_.window(inventory_, title, &invOpen);
+        }
+
         const glm::vec3 modelOrigin() const; 
         glm::mat4 modelTransform() const;
         const Model& model() const { return model_; }
-        void cleanup() { return model_.cleanup(); }
+        void cleanup() { 
+            inventoryWindow_.cleanup();
+            model_.cleanup(); 
+        }
 
         bool isClicked(
             const glm::vec3& rayOrigin,
@@ -43,6 +51,7 @@ class Container{
         Inventory inventory_;
         Model model_;
         std::optional<ClickableModel> clicker_;
+        InventoryWindow inventoryWindow_;
         const float modelScale = 1.0f;//0.05f;
 
 };

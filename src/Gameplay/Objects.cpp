@@ -43,6 +43,7 @@ const glm::vec3 Container::modelOrigin() const {
     const glm::vec3 modelOrigin(modelCenter.x, modelCenter.y, model_.minimum().z);
     return modelOrigin;
 }
+
 glm::mat4 Container::modelTransform() const {
     glm::mat4 modelTransform = glm::translate(
             glm::mat4(1.0f), 

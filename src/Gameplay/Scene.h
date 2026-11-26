@@ -18,10 +18,12 @@ class Scene{
         void loadCatalog(std::string fileName);
         bool initializeContainers(int containerPop, std::string fileName);
         const glm::vec3& sceneSize() const { return sceneSize_; }
+        const std::unordered_map<std::string, GLuint>& icons() const { return iconTextures_; }
         void beginFrame(Renderer& renderer, const Player& player, int width, int height);
         void draw(Renderer& renderer, const Player& player);
         void objectHit(glm::vec3 rayOrigin, glm::vec3 rayDirection);
         void containerWindow(Player& player);
+        void playerItemTransfer(Player& player, std::optional<std::size_t> clickedSlot);
         bool collisionDetection(Player& player);
         void resolveCollision(Player& player, glm::vec3 previousPosition);
         void sceneCleanup();
@@ -30,6 +32,7 @@ class Scene{
         // std::mt19937 gen_;
         std::vector<Item> startingItems_;
         ItemCatalog catalog_;
+        std::unordered_map<std::string, GLuint> iconTextures_;
         std::vector<std::unique_ptr<Container>> containers_;
 
 };

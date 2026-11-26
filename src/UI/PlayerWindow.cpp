@@ -15,49 +15,8 @@
 #include <PlayerWindow.h>
 #include <UIElements.h>
 
-GLuint loadIconTexture(const std::filesystem::path& path) {
-    int width = 0;
-    int height = 0;
-    int channels = 0;
-
-    unsigned char* pixels = stbi_load(
-        path.string().c_str(),
-        &width, &height, &channels,
-        STBI_rgb_alpha
-    );
-
-    if (!pixels) {
-        std::cerr << "Could not load icon: " << path
-                  << ": " << stbi_failure_reason() << '\n';
-        return 0;
-    }
-
-    GLint previousTexture = 0;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &previousTexture);
-
-    GLuint texture = 0;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glTexImage2D(
-        GL_TEXTURE_2D, 0, GL_RGBA8,
-        width, height, 0,
-        GL_RGBA, GL_UNSIGNED_BYTE, pixels
-    );
-
-    glBindTexture(GL_TEXTURE_2D, previousTexture);
-    stbi_image_free(pixels);
-
-    return texture;
-}
-
-void PlayerWindow::playerWindow(Player& player) {
-    const ImVec2 padding = ImGui::GetStyle().FramePadding;
+std::optional<std::size_t> PlayerWindow::playerWindow(Player& player) {
+    std::optional<std::size_t> clickedSlot;
     ImGui::SetNextWindowSize(ImVec2(500, 1200), ImGuiCond_FirstUseEver);
     const std::filesystem::path iconPath =
                             std::filesystem::path(ReDox_ICONS_PATH);
@@ -74,6 +33,7 @@ void PlayerWindow::playerWindow(Player& player) {
         const float topHeight = (available.y - spacing.y) * 0.5f;
         const ImVec2 slotSize(40.0f, 40.0f);
         if (ImGui::BeginChild("PlayerTop", ImVec2(0.0f, topHeight))) {
+            // Player Equipment : TOP LEFT
             const float leftWidth =
                 (ImGui::GetContentRegionAvail().x - spacing.x) * 0.5f;
             if (ImGui::BeginChild("Equipment", ImVec2(leftWidth, 0.0f))) {
@@ -107,7 +67,7 @@ void PlayerWindow::playerWindow(Player& player) {
             }
             ImGui::EndChild(); // Ending Equipment
             ImGui::SameLine();
-            // ImGui::Separator();
+            // Player Stats : TOP RIGHT
             if (ImGui::BeginChild("Stats", ImVec2(0.0f, 0.0f))) {
                 ImGui::TextUnformatted("Stats");
                 // Draw player stats here.
@@ -115,64 +75,21 @@ void PlayerWindow::playerWindow(Player& player) {
             ImGui::EndChild();
         }
         ImGui::EndChild();
-        
+        // Player INVENTORY : BOTTOM HALF
         if (ImGui::BeginChild("PlayerInventory", ImVec2(0.0f, 0.0f))) {
             ImGui::TextUnformatted("Inventory");
-            constexpr int columns = 4;
-            if (ImGui::BeginTable(
-                "Inventory Slots", columns,
-                ImGuiTableFlags_Borders | ImGuiTableFlags_SizingStretchSame)
-            ) {
-                for (std::size_t i = 0; i < player.currentInventory().slotCount(); ++i) {
-                    ImGui::TableNextColumn();
-                    ImGui::PushID(static_cast<int>(i));
-                    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-                    
-                    const Item* item = player.currentInventory().itemAt(i);
-                    if (item) {
-                        // const std::filesystem::path iconPath =
-                        //     std::filesystem::path(ReDox_ICONS_PATH) / item->thumbnail;
-                        std::filesystem::path itemPath = iconPath / item->thumbnail;
-                        const std::string key = itemPath.string();
-                        auto [entry, inserted] = iconTextures_.try_emplace(key, 0);
-                        if (inserted) {
-                            entry->second = loadIconTexture(itemPath);
-                        }
-                        if (entry->second != 0) {
-                            // ImGui::PushID(static_cast<int>(i));
-                            if (ImGui::ImageButton(
-                                    "ItemIcon",
-                                    static_cast<ImTextureID>(entry->second),
-                                    slotSize)) {
-                                    // ImVec2(48.0f, 48.0f))) {
-                                // Handle clicking this inventory slot.
-                            }
-                        } else {
-                            ImGui::Button(
-                            item->name.c_str(),
-                            ImVec2(slotSize.x + padding.x * 2.0f,
-                                slotSize.y + padding.y * 2.0f)
-                            );
-                        }
-                    } else {
-                        ImGui::Button(
-                            "Empty",
-                            ImVec2(slotSize.x + padding.x * 2.0f,
-                                slotSize.y + padding.y * 2.0f)
-                        );
-                    }
-                    ImGui::PopStyleVar();
-                    ImGui::PopID();
-                }
-                ImGui::EndTable();
-            }
+            // inventoryWindow_.drawContents(player.currentInventory());
+            clickedSlot =
+                inventoryWindow_.drawContents(player.currentInventory());
         }
         ImGui::EndChild();
     }
     ImGui::End();
+    return clickedSlot;
 }
 
 void PlayerWindow::playerWindowCleanup() {
+    inventoryWindow_.cleanup();
     for (auto& [name, id] : iconTextures_) {
         glDeleteTextures(1, &id);
     }
